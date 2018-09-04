@@ -6,6 +6,7 @@ namespace GRF
     public class GRF
     {
         public int FileCount { get; } = 0;
+        public bool IsOpen { get; } = false;
 
         public void Open( string path )
         {

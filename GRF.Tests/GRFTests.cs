@@ -18,6 +18,17 @@ namespace GRF.Tests
         }
 
         [Test]
+        public void IsOpen_ReturnsFalse_BeforeOpeningAFile()
+        {
+            var grf = new GRF();
+            var expected = false;
+
+            var actual = grf.IsOpen;
+
+            Assert.AreEqual( expected, actual );
+        }
+
+        [Test]
         public void Open_ThrowsFileNotFound_WhenPassingInvalidPath()
         {
             var grf = new GRF();
