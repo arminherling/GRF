@@ -5,6 +5,8 @@ namespace GRF
 {
     public class GRF
     {
+        public int FileCount { get; } = 0;
+
         public void Open( string path )
         {
             if( !File.Exists( path ) )
