@@ -16,4 +16,10 @@
     <ProjectReference Include="..\GRF\GRF.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\test.grf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
