@@ -73,5 +73,41 @@ namespace GRF.Tests
 
             Assert.Throws<FileNotFoundException>( throwingMethod );
         }
+
+        [Test]
+        public void Signature_ReturnsEmptyString_BeforeOpeningAFile()
+        {
+            var grf = new GRF();
+            var expected = string.Empty;
+
+            var actual = grf.Signature;
+
+            Assert.AreEqual( expected, actual );
+        }
+
+        [Test]
+        public void Signature_ReturnsMasterOfMagic_AfterOpeningAFile()
+        {
+            var grf = new GRF();
+            var expected = "Master of Magic";
+            grf.Open( "Data/test.grf" );
+
+            var actual = grf.Signature;
+
+            Assert.AreEqual( expected, actual );
+        }
+
+        [Test]
+        public void Signature_ReturnsEmptyString_AfterClosingAPreviouslyOpenedFile()
+        {
+            var grf = new GRF();
+            var expected = string.Empty;
+            grf.Open( "Data/test.grf" );
+            grf.Close();
+
+            var actual = grf.Signature;
+
+            Assert.AreEqual( expected, actual );
+        }
     }
 }
