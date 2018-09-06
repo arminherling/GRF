@@ -39,6 +39,19 @@ namespace GRF.Tests
             Assert.AreEqual( expected, actual );
         }
 
+
+        [Test]
+        public void IsOpen_ReturnsTrue_AfterOpeningAFile()
+        {
+            var grf = new GRF();
+            var expected = true;
+            grf.Open( "Data/test.grf" );
+
+            var actual = grf.IsOpen;
+
+            Assert.AreEqual( expected, actual );
+        }
+
         [Test]
         public void Open_ThrowsFileNotFound_WhenPassingInvalidPath()
         {

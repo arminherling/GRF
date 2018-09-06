@@ -1,4 +1,6 @@
-﻿namespace GRF
+﻿using System;
+
+namespace GRF
 {
     public static class DataEncryptionStandard
     {
@@ -56,8 +58,7 @@
             }
         };
 
-        static readonly byte[] Bitmask = new byte[8]
-        {
+        static readonly byte[] Bitmask = {
             0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
         };
     }
