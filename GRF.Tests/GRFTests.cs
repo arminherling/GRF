@@ -28,6 +28,31 @@ namespace GRF.Tests
             Assert.AreEqual( expected, actual );
         }
 
+        //[Test]
+        //public void FileCount_ReturnsNine_AfterOpeningAFile()
+        //{
+        //    var grf = new GRF();
+        //    var expected = 9;
+        //    grf.Open( "Data/test.grf" );
+
+        //    var actual = grf.FileCount;
+
+        //    Assert.AreEqual( expected, actual );
+        //}
+
+        [Test]
+        public void FileCount_ReturnsZero_AfterClosingAPreviouslyOpenedFile()
+        {
+            var grf = new GRF();
+            var expected = 0;
+            grf.Open( "Data/test.grf" );
+            grf.Close();
+
+            var actual = grf.FileCount;
+
+            Assert.AreEqual( expected, actual );
+        }
+
         [Test]
         public void IsOpen_ReturnsFalse_BeforeOpeningAFile()
         {
