@@ -19,5 +19,15 @@ namespace GRF
 
             IsOpen = true;
         }
+
+        public void Close()
+        {
+            if( IsOpen )
+            {
+                // TODO close internal stream
+            }
+
+            IsOpen = false;
+        }
     }
 }
