@@ -33,7 +33,7 @@ namespace GRF
 
             var signatureBytes = streamReader.ReadBytes( 15 );
             Signature = Encoding.ASCII.GetString( signatureBytes );
-            streamReader.ReadByte(); // advance position
+            streamReader.ReadByte(); // string null terminator
 
             _encryptionKey = streamReader.ReadBytes( 14 );
             _fileTableOffset = streamReader.ReadInt32();
@@ -47,7 +47,7 @@ namespace GRF
             _compressedLength = streamReader.ReadInt32();
             _uncompressedLength = streamReader.ReadInt32();
 
-
+            var compressedBodyBytes = streamReader.ReadBytes( _compressedLength );
 
 
 
