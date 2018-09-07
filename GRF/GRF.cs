@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Ionic.Zlib;
 
 namespace GRF
 {
@@ -15,11 +16,13 @@ namespace GRF
         private int _version;
         private int _compressedLength;
         private int _uncompressedLength;
+        private byte[] _bodyBytes;
+        private List<object> _files = new List<object>();
 
-        public int FileCount { get; private set; } = 0;
         public bool IsOpen { get; private set; } = false;
         public List<string> FileNames { get; } = new List<string>();
         public string Signature { get; private set; } = string.Empty;
+        public int FileCount => _files.Count;
 
         public void Open( string filePath )
         {
@@ -40,7 +43,6 @@ namespace GRF
             _m1 = streamReader.ReadInt32();
             _m2 = streamReader.ReadInt32();
             _version = streamReader.ReadInt32();
-            FileCount = _m2 - _m1 - 7;
 
             _stream.Seek( _fileTableOffset, SeekOrigin.Current );
 
@@ -48,9 +50,16 @@ namespace GRF
             _uncompressedLength = streamReader.ReadInt32();
 
             var compressedBodyBytes = streamReader.ReadBytes( _compressedLength );
+            _bodyBytes = ZlibStream.UncompressBuffer( compressedBodyBytes );
 
+            var bodyStream = new MemoryStream( _bodyBytes );
+            var bodyReader = new BinaryReader( bodyStream );
 
-
+            var fileCount = _m2 - _m1 - 7;
+            for( int i = 0; i < fileCount; i++ )
+            {
+                _files.Add( null );
+            }
 
             IsOpen = true;
         }
@@ -61,7 +70,7 @@ namespace GRF
             {
                 _stream.Close();
                 Signature = string.Empty;
-                FileCount = 0;
+                _files.Clear();
             }
 
             IsOpen = false;
