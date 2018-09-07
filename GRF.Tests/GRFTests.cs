@@ -23,15 +23,15 @@ namespace GRF.Tests
         {
             var grf = new GRF();
             var expected = new List<string>() {
-                @"data\0_Tex1.bmp",
-                @"data\11001.txt",
-                @"data\balls.wav",
-                @"data\idnum2itemdesctable.txt",
-                @"data\idnum2itemdisplaynametable.txt",
-                @"data\loading00.jpg",
-                @"data\monstertalktable.xml",
-                @"data\resnametable.txt",
-                @"data\t2_배경1-1.bmp" };
+                "data\\0_Tex1.bmp",
+                "data\\11001.txt",
+                "data\\balls.wav",
+                "data\\idnum2itemdesctable.txt",
+                "data\\idnum2itemdisplaynametable.txt",
+                "data\\loading00.jpg",
+                "data\\monstertalktable.xml",
+                "data\\resnametable.txt",
+                "data\\t2_배경1-1.bmp" };
             grf.Open( "Data/test.grf" );
 
             var actual = grf.FileNames;
