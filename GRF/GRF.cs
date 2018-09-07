@@ -17,12 +17,12 @@ namespace GRF
         private int _compressedLength;
         private int _uncompressedLength;
         private byte[] _bodyBytes;
-        private List<string> _files = new List<string>();
 
         public bool IsOpen { get; private set; } = false;
         public string Signature { get; private set; } = string.Empty;
-        public int FileCount => _files.Count;
-        public List<string> FileNames => _files;
+        private List<string> Files { get; set; } = new List<string>();
+        public int FileCount => Files.Count;
+        public List<string> FileNames => Files;
 
         public void Open( string filePath )
         {
@@ -60,7 +60,7 @@ namespace GRF
             {
                 var fileName = string.Empty;
                 char currentChar;
-                while( (currentChar = (char)bodyReader.ReadByte()) != 0 )
+                while( ( currentChar = (char)bodyReader.ReadByte() ) != 0 )
                 {
                     fileName += currentChar;
                 }
@@ -71,7 +71,7 @@ namespace GRF
                 var fileFlags = bodyReader.ReadByte();
                 var fileOffset = bodyReader.ReadInt32();
 
-                _files.Add( fileName );
+                Files.Add( fileName );
             }
 
             IsOpen = true;
@@ -83,7 +83,7 @@ namespace GRF
             {
                 _stream.Close();
                 Signature = string.Empty;
-                _files.Clear();
+                Files.Clear();
             }
 
             IsOpen = false;
