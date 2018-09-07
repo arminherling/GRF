@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.IO;
 
 namespace GRF.Tests
@@ -10,9 +11,34 @@ namespace GRF.Tests
         public void FileNames_ReturnsEmptyList_BeforeOpeningAFile()
         {
             var grf = new GRF();
-            var expected = 0;
+            var expected = new List<string>();
 
-            var actual = grf.FileNames.Count;
+            var actual = grf.FileNames;
+
+            Assert.AreEqual( expected, actual );
+        }
+
+        //[Test]
+        //public void FileNames_ReturnsAllFilesFromTestGrf_AfterOpeningAFile()
+        //{
+        //    var grf = new GRF();
+        //    var expected = new List<string>(); //TODO insert files
+        //    grf.Open( "Data/test.grf" );
+
+        //    var actual = grf.FileNames;
+
+        //    Assert.AreEqual( expected, actual );
+        //}
+
+        [Test]
+        public void FileNames_ReturnsEmptyList_AfterClosingAPreviouslyOpenedFile()
+        {
+            var grf = new GRF();
+            var expected = new List<string>();
+            grf.Open( "Data/test.grf" );
+            grf.Close();
+
+            var actual = grf.FileNames;
 
             Assert.AreEqual( expected, actual );
         }
