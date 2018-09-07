@@ -18,17 +18,26 @@ namespace GRF.Tests
             Assert.AreEqual( expected, actual );
         }
 
-        //[Test]
-        //public void FileNames_ReturnsAllFilesFromTestGrf_AfterOpeningAFile()
-        //{
-        //    var grf = new GRF();
-        //    var expected = new List<string>(); //TODO insert files
-        //    grf.Open( "Data/test.grf" );
+        [Test]
+        public void FileNames_ReturnsAllFilesFromTestGrf_AfterOpeningAFile()
+        {
+            var grf = new GRF();
+            var expected = new List<string>() {
+                @"data\0_Tex1.bmp",
+                @"data\11001.txt",
+                @"data\balls.wav",
+                @"data\idnum2itemdesctable.txt",
+                @"data\idnum2itemdisplaynametable.txt",
+                @"data\loading00.jpg",
+                @"data\monstertalktable.xml",
+                @"data\resnametable.txt",
+                @"data\t2_¹è°æ1-1.bmp" };
+            grf.Open( "Data/test.grf" );
 
-        //    var actual = grf.FileNames;
+            var actual = grf.FileNames;
 
-        //    Assert.AreEqual( expected, actual );
-        //}
+            Assert.AreEqual( expected, actual );
+        }
 
         [Test]
         public void FileNames_ReturnsEmptyList_AfterClosingAPreviouslyOpenedFile()
