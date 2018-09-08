@@ -19,6 +19,7 @@ namespace GRF.Tests
         }
 
         [Test]
+        [SetCulture( "" )] // compare with an invarient culture
         public void FileNames_ReturnsAllFilesFromTestGrf_AfterOpeningAFile()
         {
             var grf = new GRF();
