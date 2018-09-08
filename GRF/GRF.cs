@@ -71,7 +71,7 @@ namespace GRF
                 var fileFlags = bodyReader.ReadByte();
                 var fileOffset = bodyReader.ReadInt32();
 
-                Files.Add( Encoding.Default.GetString( Encoding.Default.GetBytes( fileName ) ) );
+                Files.Add( fileName );
             }
 
             IsOpen = true;
