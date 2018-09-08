@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace GRF.Tests
 {
@@ -34,7 +35,8 @@ namespace GRF.Tests
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
             grf.Open( "Data/test.grf" );
-
+            Encoding.RegisterProvider( CodePagesEncodingProvider.Instance );
+            Encoding RagnarokFileEncoding = Encoding.GetEncoding( 1252 );
             var actual = grf.FileNames;
 
             Assert.AreEqual( expected.Count, actual.Count );
@@ -46,7 +48,7 @@ namespace GRF.Tests
             Assert.AreEqual( expected[5], actual[5] );
             Assert.AreEqual( expected[6], actual[6] );
             Assert.AreEqual( expected[7], actual[7] );
-            Assert.AreEqual( expected[8], actual[8] );
+            Assert.AreEqual(RagnarokFileEncoding.GetString( Encoding.Default.GetBytes( expected[8])), actual[8] );
         }
 
         [Test]
