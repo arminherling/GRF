@@ -37,7 +37,16 @@ namespace GRF.Tests
 
             var actual = grf.FileNames;
 
-            Assert.AreEqual( expected, actual );
+            Assert.AreEqual( expected.Count, actual.Count );
+            Assert.AreEqual( expected[0], actual[0] );
+            Assert.AreEqual( expected[1], actual[1] );
+            Assert.AreEqual( expected[2], actual[2] );
+            Assert.AreEqual( expected[3], actual[3] );
+            Assert.AreEqual( expected[4], actual[4] );
+            Assert.AreEqual( expected[5], actual[5] );
+            Assert.AreEqual( expected[6], actual[6] );
+            Assert.AreEqual( expected[7], actual[7] );
+            Assert.AreEqual( expected[8], actual[8] );
         }
 
         [Test]
