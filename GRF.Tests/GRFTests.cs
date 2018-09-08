@@ -48,7 +48,7 @@ namespace GRF.Tests
             Assert.AreEqual( expected[5], actual[5] );
             Assert.AreEqual( expected[6], actual[6] );
             Assert.AreEqual( expected[7], actual[7] );
-            Assert.AreEqual(RagnarokFileEncoding.GetString( Encoding.Default.GetBytes( expected[8])), actual[8] );
+            Assert.IsTrue( expected[8].Equals( actual[8], System.StringComparison.InvariantCulture ) );
         }
 
         [Test]
