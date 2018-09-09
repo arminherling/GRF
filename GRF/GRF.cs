@@ -68,6 +68,20 @@ namespace GRF
                 if( !fileFlags.HasFlag( FileFlag.File ) || fileUncompressedLength == 0 )
                     continue;
 
+                var fileCycles = -1;
+                if( fileFlags.HasFlag( FileFlag.Mixcrypt ) )
+                {
+                    fileCycles = 1;
+                    for( int y = 10; fileCompressedLength >= y; y *= 10 )
+                    {
+                        fileCycles++;
+                    }
+                }
+                if( fileFlags.HasFlag( FileFlag.DES ) )
+                    fileCycles = 0;
+
+
+
                 Files.Add( fileName, null );
             }
 
