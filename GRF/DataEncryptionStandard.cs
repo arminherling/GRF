@@ -66,13 +66,11 @@ namespace GRF
         {
             if( flags.HasFlag( FileFlag.MixedEncrypted ) )
             {
-                // DecodeFull
-                throw new NotImplementedException( flags.ToString() );
+                throw new NotImplementedException( "DecodeFull not implemented" );
             }
             else if( flags.HasFlag( FileFlag.DES ) )
             {
-                // DecodeHeaders
-                throw new NotImplementedException( flags.ToString() );
+                throw new NotImplementedException( "DecodeHeader not implemented" );
             }
 
             return data;
