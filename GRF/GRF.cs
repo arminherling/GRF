@@ -7,13 +7,13 @@ using Ionic.Zlib;
 
 namespace GRF
 {
-    public class GRF
+    public class Grf
     {
         private Stream _stream;
 
         public bool IsOpen { get; private set; }
         public string Signature { get; private set; } = string.Empty;
-        private Dictionary<string, object> Files { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, GrfFile> Files { get; set; } = new Dictionary<string, GrfFile>();
         public int FileCount => Files.Count;
         public List<string> FileNames => Files.Keys.ToList();
 
@@ -80,9 +80,9 @@ namespace GRF
                 if( fileFlags.HasFlag( FileFlag.DES ) )
                     fileCycles = 0;
 
+                var file = new GrfFile( fileName );
 
-
-                Files.Add( fileName, null );
+                Files.Add( fileName, file );
             }
 
             IsOpen = true;
