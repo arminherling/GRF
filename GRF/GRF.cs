@@ -9,6 +9,8 @@ namespace GRF
 {
     public class Grf
     {
+        static readonly int GrfHeaderSize = 46;
+
         public bool IsLoaded { get; private set; }
         public string Signature { get; private set; } = string.Empty;
         public Dictionary<string, GrfFile> Files { get; set; } = new Dictionary<string, GrfFile>();
@@ -66,13 +68,19 @@ namespace GRF
                 if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
                     continue;
 
-                Files.Add( fileName, 
-                    new GrfFile( 
-                        new byte[0] /*compressed data*/, 
-                        fileName, 
-                        uncompressedFileSize, 
+                stream.Seek( GrfHeaderSize + fileOffset, SeekOrigin.Begin );
+
+                Files.Add( 
+                    fileName,
+                    new GrfFile(
+                        streamReader.ReadBytes( compressedFileSizeAligned ),
+                        fileName,
+                        compressedFileSize,
+                        uncompressedFileSize,
                         fileFlags ) );
             }
+            stream.Close();
+            bodyStream.Close();
             IsLoaded = true;
         }
 

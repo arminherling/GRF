@@ -61,5 +61,21 @@ namespace GRF
         static readonly byte[] Bitmask = {
             0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
         };
+
+        internal static byte[] DecodeGrfFile( byte[] data, FileFlag flags, int compressedSize )
+        {
+            if( flags.HasFlag( FileFlag.MixedEncrypted ) )
+            {
+                // DecodeFull
+                throw new NotImplementedException( flags.ToString() );
+            }
+            else if( flags.HasFlag( FileFlag.DES ) )
+            {
+                // DecodeHeaders
+                throw new NotImplementedException( flags.ToString() );
+            }
+
+            return data;
+        }
     }
 }
