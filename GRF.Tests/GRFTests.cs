@@ -8,7 +8,7 @@ namespace GRF.Tests
     public class GrfTests
     {
         [Test]
-        public void FileNames_ReturnsEmptyList_BeforeOpeningAFile()
+        public void FileNames_ReturnsEmptyList_BeforeLoadingAFile()
         {
             var grf = new Grf();
             var expected = new List<string>();
@@ -19,7 +19,7 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void FileNames_ReturnsAllFilesFromTestGrf_AfterOpeningAFile()
+        public void FileNames_ReturnsAllFilesFromTestGrf_AfterLoadingAFile()
         {
             var grf = new Grf();
             var expected = new List<string>() {
@@ -32,7 +32,7 @@ namespace GRF.Tests
                 "data\\monstertalktable.xml",
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
-            grf.Open( "Data/test.grf" );
+            grf.Load( "Data/test.grf" );
 
             var actual = grf.FileNames;
 
@@ -40,7 +40,7 @@ namespace GRF.Tests
         }
         
         [Test]
-        public void Files_ContainGrfFilesWithSameName_AfterOpeningAFile()
+        public void Files_ContainGrfFilesWithSameName_AfterLoadingAFile()
         {
             var grf = new Grf();
             var expectedNames = new List<string>() {
@@ -53,7 +53,7 @@ namespace GRF.Tests
                 "data\\monstertalktable.xml",
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
-            grf.Open( "Data/test.grf" );
+            grf.Load( "Data/test.grf" );
 
             var files = grf.Files;
 
@@ -65,12 +65,12 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void FileNames_ReturnsEmptyList_AfterClosingAPreviouslyOpenedFile()
+        public void FileNames_ReturnsEmptyList_AfterUnloadingAPreviouslyLoadedFile()
         {
             var grf = new Grf();
             var expected = new List<string>();
-            grf.Open( "Data/test.grf" );
-            grf.Close();
+            grf.Load( "Data/test.grf" );
+            grf.Unload();
 
             var actual = grf.FileNames;
 
@@ -78,7 +78,7 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void FileCount_ReturnsZero_BeforeOpeningAFile()
+        public void FileCount_ReturnsZero_BeforeLoadingAFile()
         {
             var grf = new Grf();
             var expected = 0;
@@ -89,11 +89,11 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void FileCount_ReturnsNine_AfterOpeningAFile()
+        public void FileCount_ReturnsNine_AfterLoadingAFile()
         {
             var grf = new Grf();
             var expected = 9;
-            grf.Open( "Data/test.grf" );
+            grf.Load( "Data/test.grf" );
 
             var actual = grf.FileCount;
 
@@ -101,12 +101,12 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void FileCount_ReturnsZero_AfterClosingAPreviouslyOpenedFile()
+        public void FileCount_ReturnsZero_AfterUnloadingAPreviouslyLoadedFile()
         {
             var grf = new Grf();
             var expected = 0;
-            grf.Open( "Data/test.grf" );
-            grf.Close();
+            grf.Load( "Data/test.grf" );
+            grf.Unload();
 
             var actual = grf.FileCount;
 
@@ -114,53 +114,53 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void IsOpen_ReturnsFalse_BeforeOpeningAFile()
+        public void IsLoaded_ReturnsFalse_BeforeLoadingAFile()
         {
             var grf = new Grf();
             var expected = false;
 
-            var actual = grf.IsOpen;
+            var actual = grf.IsLoaded;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
-        public void IsOpen_ReturnsTrue_AfterOpeningAFile()
+        public void IsLoaded_ReturnsTrue_AfterLoadingAFile()
         {
             var grf = new Grf();
             var expected = true;
-            grf.Open( "Data/test.grf" );
+            grf.Load( "Data/test.grf" );
 
-            var actual = grf.IsOpen;
+            var actual = grf.IsLoaded;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
-        public void IsOpen_ReturnsFalse_AfterClosingAPreviouslyOpenedFile()
+        public void IsLoaded_ReturnsFalse_AfterUnloadingAPreviouslyLoadedFile()
         {
             var grf = new Grf();
             var expected = false;
-            grf.Open( "Data/test.grf" );
-            grf.Close();
+            grf.Load( "Data/test.grf" );
+            grf.Unload();
 
-            var actual = grf.IsOpen;
+            var actual = grf.IsLoaded;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
-        public void Open_ThrowsFileNotFound_WhenPassingInvalidPath()
+        public void Load_ThrowsFileNotFound_WhenPassingInvalidPath()
         {
             var grf = new Grf();
 
-            void throwingMethod() { grf.Open( "some/path/file.grf" ); }
+            void throwingMethod() { grf.Load( "some/path/file.grf" ); }
 
             Assert.Throws<FileNotFoundException>( throwingMethod );
         }
 
         [Test]
-        public void Signature_ReturnsEmptyString_BeforeOpeningAFile()
+        public void Signature_ReturnsEmptyString_BeforeLoadingAFile()
         {
             var grf = new Grf();
             var expected = string.Empty;
@@ -171,11 +171,11 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void Signature_ReturnsMasterOfMagic_AfterOpeningAFile()
+        public void Signature_ReturnsMasterOfMagic_AfterLoadingAFile()
         {
             var grf = new Grf();
             var expected = "Master of Magic";
-            grf.Open( "Data/test.grf" );
+            grf.Load( "Data/test.grf" );
 
             var actual = grf.Signature;
 
@@ -183,12 +183,12 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void Signature_ReturnsEmptyString_AfterClosingAPreviouslyOpenedFile()
+        public void Signature_ReturnsEmptyString_AfterUnloadingAPreviouslyLoadedFile()
         {
             var grf = new Grf();
             var expected = string.Empty;
-            grf.Open( "Data/test.grf" );
-            grf.Close();
+            grf.Load( "Data/test.grf" );
+            grf.Unload();
 
             var actual = grf.Signature;
 

@@ -9,23 +9,21 @@ namespace GRF
 {
     public class Grf
     {
-        private Stream _stream;
-
-        public bool IsOpen { get; private set; }
+        public bool IsLoaded { get; private set; }
         public string Signature { get; private set; } = string.Empty;
         public Dictionary<string, GrfFile> Files { get; set; } = new Dictionary<string, GrfFile>();
         public int FileCount => Files.Count;
         public List<string> FileNames => Files.Keys.ToList();
 
-        public void Open( string filePath )
+        public void Load( string grfFilePath )
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var absolutePath = Path.Combine( baseDirectory, filePath );
+            var absolutePath = Path.Combine( baseDirectory, grfFilePath );
             if( !File.Exists( absolutePath ) )
-                throw new FileNotFoundException( filePath );
+                throw new FileNotFoundException( grfFilePath );
 
-            _stream = new MemoryStream( File.ReadAllBytes( absolutePath ) );
-            var streamReader = new BinaryReader( _stream );
+            Stream stream = new MemoryStream( File.ReadAllBytes( absolutePath ) );
+            var streamReader = new BinaryReader( stream );
 
             var signatureBytes = streamReader.ReadBytes( 15 );
             Signature = Encoding.ASCII.GetString( signatureBytes );
@@ -37,15 +35,15 @@ namespace GRF
             var distortedFileCount = streamReader.ReadInt32();
             var version = streamReader.ReadInt32();
 
-            _stream.Seek( fileTableOffset, SeekOrigin.Current );
+            stream.Seek( fileTableOffset, SeekOrigin.Current );
 
-            var compressedLength = streamReader.ReadInt32();
-            var uncompressedLength = streamReader.ReadInt32();
+            var compressedBodySize = streamReader.ReadInt32();
+            var bodySize = streamReader.ReadInt32();
 
-            var compressedBodyBytes = streamReader.ReadBytes( compressedLength );
-            var bodyBytes = ZlibStream.UncompressBuffer( compressedBodyBytes );
+            var compressedBody = streamReader.ReadBytes( compressedBodySize );
+            var bodyData = ZlibStream.UncompressBuffer( compressedBody );
 
-            var bodyStream = new MemoryStream( bodyBytes );
+            var bodyStream = new MemoryStream( bodyData );
             var bodyReader = new BinaryReader( bodyStream );
 
             var fileCount = distortedFileCount - distortedFileCountSeed - 7;
@@ -58,46 +56,31 @@ namespace GRF
                     fileName += currentChar;
                 }
 
-                var fileCompressedLength = bodyReader.ReadInt32();
-                var fileCompressedLengthAligned = bodyReader.ReadInt32();
-                var fileUncompressedLength = bodyReader.ReadInt32();
+                var compressedFileSize = bodyReader.ReadInt32();
+                var compressedFileSizeAligned = bodyReader.ReadInt32();
+                var uncompressedFileSize = bodyReader.ReadInt32();
                 var fileFlags = (FileFlag)bodyReader.ReadByte();
                 var fileOffset = bodyReader.ReadInt32();
 
                 // skip directories and files with zero size
-                if( !fileFlags.HasFlag( FileFlag.File ) || fileUncompressedLength == 0 )
+                if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
                     continue;
 
-                var fileCycles = -1;
-                if( fileFlags.HasFlag( FileFlag.Mixcrypt ) )
-                {
-                    fileCycles = 1;
-                    for( int y = 10; fileCompressedLength >= y; y *= 10 )
-                    {
-                        fileCycles++;
-                    }
-                }
-                if( fileFlags.HasFlag( FileFlag.DES ) )
-                    fileCycles = 0;
-
-                var file = new GrfFile( fileName );
-
-                Files.Add( fileName, file );
+                Files.Add( fileName, 
+                    new GrfFile( 
+                        new byte[0] /*compressed data*/, 
+                        fileName, 
+                        uncompressedFileSize, 
+                        fileFlags ) );
             }
-
-            IsOpen = true;
+            IsLoaded = true;
         }
 
-        public void Close()
+        public void Unload()
         {
-            if( IsOpen )
-            {
-                _stream.Close();
-                Signature = string.Empty;
-                Files.Clear();
-            }
-
-            IsOpen = false;
+            Files.Clear();
+            Signature = string.Empty;
+            IsLoaded = false;
         }
     }
 }
