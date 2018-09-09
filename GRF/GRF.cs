@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Ionic.Zlib;
 
@@ -9,20 +10,12 @@ namespace GRF
     public class GRF
     {
         private Stream _stream;
-        private byte[] _encryptionKey;
-        private int _fileTableOffset;
-        private int _m1;
-        private int _m2;
-        private int _version;
-        private int _compressedLength;
-        private int _uncompressedLength;
-        private byte[] _bodyBytes;
 
-        public bool IsOpen { get; private set; } = false;
+        public bool IsOpen { get; private set; }
         public string Signature { get; private set; } = string.Empty;
-        private List<string> Files { get; set; } = new List<string>();
+        private Dictionary<string, object> Files { get; set; } = new Dictionary<string, object>();
         public int FileCount => Files.Count;
-        public List<string> FileNames => Files;
+        public List<string> FileNames => Files.Keys.ToList();
 
         public void Open( string filePath )
         {
@@ -38,24 +31,24 @@ namespace GRF
             Signature = Encoding.ASCII.GetString( signatureBytes );
             streamReader.ReadByte(); // string null terminator
 
-            _encryptionKey = streamReader.ReadBytes( 14 );
-            _fileTableOffset = streamReader.ReadInt32();
-            _m1 = streamReader.ReadInt32();
-            _m2 = streamReader.ReadInt32();
-            _version = streamReader.ReadInt32();
+            var encryptionKey = streamReader.ReadBytes( 14 );
+            var fileTableOffset = streamReader.ReadInt32();
+            var distortedFileCountSeed = streamReader.ReadInt32();
+            var distortedFileCount = streamReader.ReadInt32();
+            var version = streamReader.ReadInt32();
 
-            _stream.Seek( _fileTableOffset, SeekOrigin.Current );
+            _stream.Seek( fileTableOffset, SeekOrigin.Current );
 
-            _compressedLength = streamReader.ReadInt32();
-            _uncompressedLength = streamReader.ReadInt32();
+            var compressedLength = streamReader.ReadInt32();
+            var uncompressedLength = streamReader.ReadInt32();
 
-            var compressedBodyBytes = streamReader.ReadBytes( _compressedLength );
-            _bodyBytes = ZlibStream.UncompressBuffer( compressedBodyBytes );
+            var compressedBodyBytes = streamReader.ReadBytes( compressedLength );
+            var bodyBytes = ZlibStream.UncompressBuffer( compressedBodyBytes );
 
-            var bodyStream = new MemoryStream( _bodyBytes );
+            var bodyStream = new MemoryStream( bodyBytes );
             var bodyReader = new BinaryReader( bodyStream );
 
-            var fileCount = _m2 - _m1 - 7;
+            var fileCount = distortedFileCount - distortedFileCountSeed - 7;
             for( int i = 0; i < fileCount; i++ )
             {
                 var fileName = string.Empty;
@@ -71,7 +64,10 @@ namespace GRF
                 var fileFlags = bodyReader.ReadByte();
                 var fileOffset = bodyReader.ReadInt32();
 
-                Files.Add( fileName );
+                if( fileFlags == 2 ) // folder
+                    continue;
+
+                Files.Add( fileName, null );
             }
 
             IsOpen = true;
