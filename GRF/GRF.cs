@@ -61,10 +61,11 @@ namespace GRF
                 var fileCompressedLength = bodyReader.ReadInt32();
                 var fileCompressedLengthAligned = bodyReader.ReadInt32();
                 var fileUncompressedLength = bodyReader.ReadInt32();
-                var fileFlags = bodyReader.ReadByte();
+                var fileFlags = (FileFlag)bodyReader.ReadByte();
                 var fileOffset = bodyReader.ReadInt32();
 
-                if( fileFlags == 2 ) // folder
+                // skip directories and files with zero size
+                if( !fileFlags.HasFlag( FileFlag.File ) || fileUncompressedLength == 0 )
                     continue;
 
                 Files.Add( fileName, null );
