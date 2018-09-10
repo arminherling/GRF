@@ -36,6 +36,8 @@ namespace GRF
             var distortedFileCountSeed = streamReader.ReadInt32();
             var distortedFileCount = streamReader.ReadInt32();
             var version = streamReader.ReadInt32();
+            if( version != 0x200 )
+                throw new NotImplementedException( "Only Version 0x200 of GRF files is supported." );
 
             stream.Seek( fileTableOffset, SeekOrigin.Current );
 
