@@ -35,8 +35,8 @@ namespace GRF
             var fileTableOffset = streamReader.ReadInt32();
             var distortedFileCountSeed = streamReader.ReadInt32();
             var distortedFileCount = streamReader.ReadInt32();
-            var version = streamReader.ReadInt32();
-            if( version != 0x200 )
+            var version = (GrfFormat)streamReader.ReadInt32();
+            if( version != GrfFormat.Version200 )
                 throw new NotImplementedException( "Only Version 0x200 of GRF files is supported." );
 
             stream.Seek( fileTableOffset, SeekOrigin.Current );
@@ -72,7 +72,7 @@ namespace GRF
 
                 stream.Seek( GrfHeaderSize + fileOffset, SeekOrigin.Begin );
 
-                Files.Add( 
+                Files.Add(
                     fileName,
                     new GrfFile(
                         streamReader.ReadBytes( compressedFileSizeAligned ),
