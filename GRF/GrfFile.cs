@@ -25,7 +25,7 @@ namespace GRF
         public byte[] GetUncompressedData()
         {
             var decodedData = DataEncryptionStandard.DecodeGrfFile( _data, Flags, CompressedSize );
-            return ZlibStream.UncompressBuffer( _data );
+            return ZlibStream.UncompressBuffer( decodedData );
         }
     }
 }

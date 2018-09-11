@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>GRF</PackageId>
+    <Version>0.1.1</Version>
+    <Authors>Armin Herling</Authors>
+    <Company>Armin Herling</Company>
+    <PackageTags>Ragnarok Online;GRF</PackageTags>
+    <Description>Simple library for loading Ragnarok Online GRF files</Description>
+    <PackageProjectUrl>https://github.com/arminherling/GRF</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/arminherling/GRF/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/arminherling/GRF.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -17,6 +17,9 @@ namespace GRF
         public int FileCount => Files.Count;
         public List<string> FileNames => Files.Keys.ToList();
 
+        public Grf(){}
+        public Grf( string grfFilePath ) => Load( grfFilePath );
+
         public void Load( string grfFilePath )
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
