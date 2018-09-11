@@ -32,7 +32,7 @@ namespace GRF.Tests
                 "data\\monstertalktable.xml",
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
 
             var actual = grf.FileNames;
 
@@ -53,7 +53,7 @@ namespace GRF.Tests
                 "data\\monstertalktable.xml",
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
 
             var files = grf.Files;
 
@@ -69,7 +69,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = new List<string>();
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
             grf.Unload();
 
             var actual = grf.FileNames;
@@ -93,7 +93,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = 9;
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
 
             var actual = grf.FileCount;
 
@@ -105,7 +105,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = 0;
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
             grf.Unload();
 
             var actual = grf.FileCount;
@@ -129,7 +129,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = true;
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
 
             var actual = grf.IsLoaded;
 
@@ -141,7 +141,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = false;
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
             grf.Unload();
 
             var actual = grf.IsLoaded;
@@ -175,7 +175,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = "Master of Magic";
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
 
             var actual = grf.Signature;
 
@@ -187,7 +187,7 @@ namespace GRF.Tests
         {
             var grf = new Grf();
             var expected = string.Empty;
-            grf.Load( "Data/test.grf" );
+            grf.Load( "Data/test200.grf" );
             grf.Unload();
 
             var actual = grf.Signature;

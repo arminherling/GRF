@@ -17,7 +17,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Data\test.grf">
+    <None Update="Data\test102.grf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\test103.grf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\test200.grf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
