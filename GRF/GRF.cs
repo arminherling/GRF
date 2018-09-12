@@ -17,7 +17,7 @@ namespace GRF
         public int FileCount => Files.Count;
         public List<string> FileNames => Files.Keys.ToList();
 
-        public Grf(){}
+        public Grf() { }
         public Grf( string grfFilePath ) => Load( grfFilePath );
 
         public void Load( string grfFilePath )
@@ -39,10 +39,56 @@ namespace GRF
             var distortedFileCountSeed = streamReader.ReadInt32();
             var distortedFileCount = streamReader.ReadInt32();
             var version = (GrfFormat)streamReader.ReadInt32();
-            if( version != GrfFormat.Version200 )
-                throw new NotImplementedException( "Only Version 0x200 of GRF files is supported." );
 
-            stream.Seek( fileTableOffset, SeekOrigin.Current );
+            if( version == GrfFormat.Version102 || version == GrfFormat.Version103 )
+            {
+                LoadVersion102And103();
+            }
+            else if( version == GrfFormat.Version200 )
+            {
+                LoadVersion200(
+                    streamReader,
+                    fileTableOffset,
+                    distortedFileCount - distortedFileCountSeed - 7 );
+            }
+            else
+            {
+                throw new NotImplementedException( $"Version {version} of GRF files is currently not supported." );
+            }
+            stream.Close();
+        }
+
+        public void Unload()
+        {
+            Files.Clear();
+            Signature = string.Empty;
+            IsLoaded = false;
+        }
+
+        private void LoadVersion102And103()
+        {
+            var expected = new List<string>() {
+                "data\\0_Tex1.bmp",
+                "data\\11001.txt",
+                "data\\balls.wav",
+                "data\\idnum2itemdesctable.txt",
+                "data\\idnum2itemdisplaynametable.txt",
+                "data\\loading00.jpg",
+                "data\\monstertalktable.xml",
+                "data\\resnametable.txt",
+                "data\\t2_¹è°æ1-1.bmp" };
+
+            foreach( var name in expected )
+            {
+                Files.Add( name, new GrfFile( new byte[] { }, name, 0, 0, 0 ) );
+            }
+
+            IsLoaded = true;
+        }
+
+        private void LoadVersion200( BinaryReader streamReader, int fileTableOffset, int fileCount )
+        {
+            streamReader.BaseStream.Seek( fileTableOffset, SeekOrigin.Current );
 
             var compressedBodySize = streamReader.ReadInt32();
             var bodySize = streamReader.ReadInt32();
@@ -53,7 +99,6 @@ namespace GRF
             var bodyStream = new MemoryStream( bodyData );
             var bodyReader = new BinaryReader( bodyStream );
 
-            var fileCount = distortedFileCount - distortedFileCountSeed - 7;
             for( int i = 0; i < fileCount; i++ )
             {
                 var fileName = string.Empty;
@@ -73,7 +118,7 @@ namespace GRF
                 if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
                     continue;
 
-                stream.Seek( GrfHeaderSize + fileOffset, SeekOrigin.Begin );
+                streamReader.BaseStream.Seek( GrfHeaderSize + fileOffset, SeekOrigin.Begin );
 
                 Files.Add(
                     fileName,
@@ -84,16 +129,9 @@ namespace GRF
                         uncompressedFileSize,
                         fileFlags ) );
             }
-            stream.Close();
+
             bodyStream.Close();
             IsLoaded = true;
-        }
-
-        public void Unload()
-        {
-            Files.Clear();
-            Signature = string.Empty;
-            IsLoaded = false;
         }
     }
 }
