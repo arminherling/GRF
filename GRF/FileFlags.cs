@@ -6,7 +6,7 @@ namespace GRF
     public enum FileFlag : byte
     {
         File = 1,
-        MixedEncrypted = 2,
+        Mixed = 2,
         DES = 4
     }
 }

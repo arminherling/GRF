@@ -64,7 +64,7 @@ namespace GRF
 
         internal static byte[] DecodeGrfFile( byte[] data, FileFlag flags, int compressedSize )
         {
-            if( flags.HasFlag( FileFlag.MixedEncrypted ) )
+            if( flags.HasFlag( FileFlag.Mixed ) )
             {
                 throw new NotImplementedException( "DecodeFull not implemented" );
             }
