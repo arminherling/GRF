@@ -75,6 +75,22 @@ namespace GRF.Tests
 
         [Test]
         [TestCaseSource( "InputFiles" )]
+        public void Files_UncompressedSizeIsSameAsExtractedDataSize_AfterLoadingLoadingAFile( string inputFile )
+        {
+            var grf = new Grf();
+            grf.Load( inputFile );
+
+            var files = grf.Files;
+
+            Assert.IsNotEmpty( files );
+            foreach( var file in files.Values )
+            {
+                Assert.AreEqual( file.UncompressedSize, file.GetUncompressedData().Length );
+            }
+        }
+
+        [Test]
+        [TestCaseSource( "InputFiles" )]
         public void FileNames_ReturnsEmptyList_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
         {
             var grf = new Grf();
