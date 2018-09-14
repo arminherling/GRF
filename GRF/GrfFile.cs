@@ -7,11 +7,12 @@ namespace GRF
     {
         private byte[] _data;
 
-        public GrfFile( byte[] data, string name, int compressedSize, int uncompressedSize, FileFlag flags )
+        public GrfFile( byte[] data, string filePath, int compressedSize, int uncompressedSize, FileFlag flags )
         {
             _data = data;
-            FilePath = name;
-            FileExtension = Path.GetExtension( name ).TrimStart('.');
+            FilePath = filePath;
+            FileName = Path.GetFileName( filePath );
+            FileExtension = Path.GetExtension( filePath ).TrimStart('.');
             CompressedSize = compressedSize;
             CompressedSizeAligned = _data.Length;
             UncompressedSize = uncompressedSize;
@@ -19,6 +20,7 @@ namespace GRF
         }
 
         public string FilePath { get; }
+        public string FileName { get; }
         public string FileExtension { get; }
         public int CompressedSize { get; }
         public int CompressedSizeAligned { get; }
