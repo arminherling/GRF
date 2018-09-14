@@ -1,4 +1,5 @@
 ﻿using Ionic.Zlib;
+using System.IO;
 
 namespace GRF
 {
@@ -9,14 +10,16 @@ namespace GRF
         public GrfFile( byte[] data, string name, int compressedSize, int uncompressedSize, FileFlag flags )
         {
             _data = data;
-            Name = name;
+            FilePath = name;
+            FileExtension = Path.GetExtension( name ).TrimStart('.');
             CompressedSize = compressedSize;
             CompressedSizeAligned = _data.Length;
             UncompressedSize = uncompressedSize;
             Flags = flags;
         }
 
-        public string Name { get; }
+        public string FilePath { get; }
+        public string FileExtension { get; }
         public int CompressedSize { get; }
         public int CompressedSizeAligned { get; }
         public int UncompressedSize { get; }

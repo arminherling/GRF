@@ -49,10 +49,37 @@ namespace GRF.Tests
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfFilesWithSameName_AfterLoadingAFile( string inputFile )
+        public void Files_ContainGrfFilesWithFileExtensions_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
-            var expectedNames = new List<string>() {
+            var expectedFileNameAndExtension = new List<(string, string)>() {
+                ("data\\0_Tex1.bmp","bmp"),
+                ("data\\11001.txt","txt"),
+                ("data\\balls.wav","wav"),
+                ("data\\idnum2itemdesctable.txt","txt"),
+                ("data\\idnum2itemdisplaynametable.txt","txt"),
+                ("data\\loading00.jpg","jpg"),
+                ("data\\monstertalktable.xml","xml"),
+                ("data\\resnametable.txt","txt"),
+                ("data\\t2_¹è°æ1-1.bmp","bmp") };
+
+            grf.Load( inputFile );
+
+            var files = grf.Files;
+
+            foreach( var (name, extension) in expectedFileNameAndExtension )
+            {
+                var file = files[name];
+                Assert.AreEqual( extension, file.FileExtension );
+            }
+        }
+
+        [Test]
+        [TestCaseSource( "InputFiles" )]
+        public void Files_ContainGrfFilesWithFilePaths_AfterLoadingAFile( string inputFile )
+        {
+            var grf = new Grf();
+            var expectedFilePaths = new List<string>() {
                 "data\\0_Tex1.bmp",
                 "data\\11001.txt",
                 "data\\balls.wav",
@@ -66,10 +93,10 @@ namespace GRF.Tests
 
             var files = grf.Files;
 
-            foreach( var name in expectedNames )
+            foreach( var name in expectedFilePaths )
             {
                 var file = files[name];
-                Assert.AreEqual( name, file.Name );
+                Assert.AreEqual( name, file.FilePath );
             }
         }
 

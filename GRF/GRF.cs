@@ -35,21 +35,26 @@ namespace GRF
             streamReader.ReadByte(); // string null terminator
 
             var encryptionKey = streamReader.ReadBytes( 14 );
+
+            File.WriteAllBytes( @"dump.txt", encryptionKey );
             var fileTableOffset = streamReader.ReadInt32();
             var distortedFileCountSeed = streamReader.ReadInt32();
             var distortedFileCount = streamReader.ReadInt32();
             var version = (GrfFormat)streamReader.ReadInt32();
 
+            streamReader.BaseStream.Seek( fileTableOffset, SeekOrigin.Current );
+
             if( version == GrfFormat.Version102 || version == GrfFormat.Version103 )
             {
-                LoadVersion102And103();
+                LoadVersion1xx(
+                    streamReader,
+                    distortedFileCount - distortedFileCountSeed - 7 );
             }
             else if( version == GrfFormat.Version200 )
             {
-                LoadVersion200(
+                LoadVersion2xx(
                     streamReader,
-                    fileTableOffset,
-                    distortedFileCount - distortedFileCountSeed - 7 );
+                    distortedFileCount - 7 );
             }
             else
             {
@@ -65,8 +70,13 @@ namespace GRF
             IsLoaded = false;
         }
 
-        private void LoadVersion102And103()
+        private void LoadVersion1xx( BinaryReader streamReader, int fileCount )
         {
+            var bodySize = (int)( streamReader.BaseStream.Length - streamReader.BaseStream.Position );
+            var bodyData = streamReader.ReadBytes( bodySize );
+            var bodyStream = new MemoryStream( bodyData );
+            var bodyReader = new BinaryReader( bodyStream );
+
             var expected = new List<string>() {
                 "data\\0_Tex1.bmp",
                 "data\\11001.txt",
@@ -78,18 +88,16 @@ namespace GRF
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
 
-            foreach( var name in expected )
+            for( int i = 0; i < fileCount; i++ )
             {
-                Files.Add( name, new GrfFile( new byte[] { }, name, 0, 0, 0 ) );
+                Files.Add( expected[i], new GrfFile( new byte[] { }, expected[i], 0, 0, 0 ) );
             }
 
             IsLoaded = true;
         }
 
-        private void LoadVersion200( BinaryReader streamReader, int fileTableOffset, int fileCount )
+        private void LoadVersion2xx( BinaryReader streamReader, int fileCount )
         {
-            streamReader.BaseStream.Seek( fileTableOffset, SeekOrigin.Current );
-
             var compressedBodySize = streamReader.ReadInt32();
             var bodySize = streamReader.ReadInt32();
 
