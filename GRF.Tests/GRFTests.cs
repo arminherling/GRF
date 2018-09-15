@@ -88,7 +88,6 @@ namespace GRF.Tests
                 ("data\\monstertalktable.xml", "monstertalktable.xml"),
                 ("data\\resnametable.txt", "resnametable.txt"),
                 ("data\\t2_¹è°æ1-1.bmp", "t2_¹è°æ1-1.bmp") };
-
             grf.Load( inputFile );
 
             var files = grf.Files;
@@ -102,10 +101,10 @@ namespace GRF.Tests
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfFilesWithFileExtensions_AfterLoadingAFile( string inputFile )
+        public void Files_ContainGrfFilesWithFileTypes_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
-            var expectedFilePathAndExtension = new List<(string, string)>() {
+            var expectedFilePathAndType = new List<(string, string)>() {
                 ("data\\0_Tex1.bmp", "bmp"),
                 ("data\\11001.txt", "txt"),
                 ("data\\balls.wav", "wav"),
@@ -115,15 +114,14 @@ namespace GRF.Tests
                 ("data\\monstertalktable.xml", "xml"),
                 ("data\\resnametable.txt", "txt"),
                 ("data\\t2_¹è°æ1-1.bmp", "bmp") };
-
             grf.Load( inputFile );
 
             var files = grf.Files;
 
-            foreach( var (filePath, extension) in expectedFilePathAndExtension )
+            foreach( var (filePath, extension) in expectedFilePathAndType )
             {
                 var file = files[filePath];
-                Assert.AreEqual( extension, file.FileExtension );
+                Assert.AreEqual( extension, file.FileType );
             }
         }
 

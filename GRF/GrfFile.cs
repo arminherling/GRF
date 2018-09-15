@@ -11,8 +11,8 @@ namespace GRF
         {
             _data = data;
             FilePath = filePath;
-            FileName = Path.GetFileName( filePath );
-            FileExtension = Path.GetExtension( filePath ).TrimStart('.');
+            FileName = Path.GetFileName( filePath.Replace( "\\", "/" ) );
+            FileType = Path.GetExtension( filePath ).TrimStart( '.' );
             CompressedSize = compressedSize;
             CompressedSizeAligned = _data.Length;
             UncompressedSize = uncompressedSize;
@@ -21,7 +21,7 @@ namespace GRF
 
         public string FilePath { get; }
         public string FileName { get; }
-        public string FileExtension { get; }
+        public string FileType { get; }
         public int CompressedSize { get; }
         public int CompressedSizeAligned { get; }
         public int UncompressedSize { get; }
