@@ -75,5 +75,131 @@ namespace GRF
 
             return data;
         }
+
+        internal static string DecodeFileName( byte[] encodedName )
+        {
+            for( int i = 0; i < encodedName.Length; i++ )
+            {
+                // swap nibbles
+                encodedName[i] = (byte)( ( encodedName[i] & 0x0F ) << 4 | ( encodedName[i] & 0xF0 ) >> 4 );
+            }
+            for( int i = 0; i < encodedName.Length / 8; i++ )
+            {
+                DesDecodeBlock( ref encodedName, i * 8 );
+            }
+
+            string fileName = string.Empty;
+            for( int i = 0; i < encodedName.Length; i++ )
+            {
+                if( (char)encodedName[i] == 0 )
+                    break;
+
+                fileName += (char)encodedName[i];
+            }
+
+            return fileName;
+        }
+
+        private static void DesDecodeBlock( ref byte[] encodedName, int i )
+        {
+            byte[] block = new byte[8];
+            Array.Copy( encodedName, i, block, 0, 8 );
+
+            InitialPermutation( ref block );
+            RoundFunction( ref block );
+            FinalPermutation( ref block );
+
+            Array.Copy( block, 0, encodedName, i, 8 );
+        }
+
+        private static void InitialPermutation( ref byte[] source )
+        {
+            byte[] block = new byte[8];
+
+            for( int i = 0; i < InitialPermutationTable.Length; i++ )
+            {
+                byte j = (byte)( InitialPermutationTable[i] - 1 );
+
+                if( ( source[( j >> 3 ) & 7] & Bitmask[j & 7] ) != 0 )
+                    block[( i >> 3 ) & 7] |= Bitmask[i & 7];
+            }
+
+            Array.Copy( block, 0, source, 0, 8 );
+        }
+
+        private static void RoundFunction( ref byte[] source )
+        {
+            byte[] block = new byte[8];
+            Array.Copy( source, 0, block, 0, 8 );
+
+            Expansion( ref block );
+            SubstitutionBoxes( ref block );
+            Transposition( ref block );
+
+            source[0] ^= block[4];
+            source[1] ^= block[5];
+            source[2] ^= block[6];
+            source[3] ^= block[7];
+        }
+
+        private static void FinalPermutation( ref byte[] source )
+        {
+            byte[] block = new byte[8];
+
+            for( int i = 0; i < FinalPermutationTable.Length; i++ )
+            {
+                byte j = (byte)( FinalPermutationTable[i] - 1 );
+
+                if( ( source[( j >> 3 ) & 7] & Bitmask[j & 7] ) != 0 )
+                    block[( i >> 3 ) & 7] |= Bitmask[i & 7];
+            }
+
+            Array.Copy( block, 0, source, 0, 8 );
+        }
+
+        private static void Expansion( ref byte[] source )
+        {
+            byte[] block = new byte[8];
+
+            block[0] = (byte)( ( ( source[7] << 5 ) | ( source[4] >> 3 ) ) & 0x3f );    // ..0 vutsr
+            block[1] = (byte)( ( ( source[4] << 1 ) | ( source[5] >> 7 ) ) & 0x3f );    // ..srqpo n
+            block[2] = (byte)( ( ( source[4] << 5 ) | ( source[5] >> 3 ) ) & 0x3f );    // ..o nmlkj
+            block[3] = (byte)( ( ( source[5] << 1 ) | ( source[6] >> 7 ) ) & 0x3f );    // ..kjihg f
+            block[4] = (byte)( ( ( source[5] << 5 ) | ( source[6] >> 3 ) ) & 0x3f );    // ..g fedcb
+            block[5] = (byte)( ( ( source[6] << 1 ) | ( source[7] >> 7 ) ) & 0x3f );    // ..cba98 7
+            block[6] = (byte)( ( ( source[6] << 5 ) | ( source[7] >> 3 ) ) & 0x3f );    // ..8 76543
+            block[7] = (byte)( ( ( source[7] << 1 ) | ( source[4] >> 7 ) ) & 0x3f );    // ..43210 v
+
+            Array.Copy( block, 0, source, 0, 8 );
+        }
+
+        private static void SubstitutionBoxes( ref byte[] source )
+        {
+            byte[] block = new byte[8];
+
+            for( int i = 0; i < SubstitutionBoxesTable.Length; i++ )
+            {
+                block[i] = (byte)( ( SubstitutionBoxesTable[i][source[i * 2 + 0]] & 0xf0 )
+                            | ( SubstitutionBoxesTable[i][source[i * 2 + 1]] & 0x0f ) );
+            }
+
+            Array.Copy( block, 0, source, 0, 8 );
+        }
+
+        private static void Transposition( ref byte[] source )
+        {
+            byte[] block = new byte[8];
+
+            for( int i = 0; i < TranspositionTable.Length; i++ )
+            {
+                byte j = (byte)( TranspositionTable[i] - 1 );
+
+                if( ( source[( j >> 3 ) + 0] & Bitmask[j & 7] ) != 0 )
+                    block[( i >> 3 ) + 4] |= Bitmask[i & 7];
+            }
+
+            Array.Copy( block, 0, source, 0, 8 );
+        }
+
     }
 }

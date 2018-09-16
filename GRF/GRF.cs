@@ -77,20 +77,26 @@ namespace GRF
             var bodyStream = new MemoryStream( bodyData );
             var bodyReader = new BinaryReader( bodyStream );
 
-            var expected = new List<string>() {
-                "data\\0_Tex1.bmp",
-                "data\\11001.txt",
-                "data\\balls.wav",
-                "data\\idnum2itemdesctable.txt",
-                "data\\idnum2itemdisplaynametable.txt",
-                "data\\loading00.jpg",
-                "data\\monstertalktable.xml",
-                "data\\resnametable.txt",
-                "data\\t2_¹è°æ1-1.bmp" };
-
-            for( int i = 0; i < fileCount; i++ )
+            for( int i = 0, fileEntryHeader = 0; i < fileCount; i++ )
             {
-                Files.Add( expected[i], new GrfFile( new byte[] { }, expected[i], 0, 0, 0 ) );
+                bodyReader.BaseStream.Seek( fileEntryHeader, SeekOrigin.Begin );
+                int nameLength = bodyReader.PeekChar() - 6;
+                int fileEntryData = fileEntryHeader + bodyReader.ReadInt32() + 4;
+
+                bodyReader.BaseStream.Seek( fileEntryHeader + 6, SeekOrigin.Begin );
+                var encodedName = bodyReader.ReadBytes( nameLength );
+                var fileName = DataEncryptionStandard.DecodeFileName( encodedName );
+
+                //bodyReader.BaseStream.Seek( fileEntryData, SeekOrigin.Begin );
+                //var compressedFileSizeBase = bodyReader.ReadInt32();
+                //var compressedFileSizeAligned = bodyReader.ReadInt32() - 37579;
+                //var uncompressedFileSize = bodyReader.ReadInt32();
+                //var compressedFileSize = compressedFileSizeBase - uncompressedFileSize - 715;
+                //var fileFlags = (FileFlag)bodyReader.ReadByte();
+                //var fileDataOffset = bodyReader.ReadInt32() + GrfHeaderSize;
+
+                fileEntryHeader = fileEntryData + 17;
+                Files.Add( fileName, new GrfFile( new byte[] { }, fileName, 0, 0, 0 ) );
             }
 
             IsLoaded = true;
@@ -120,13 +126,13 @@ namespace GRF
                 var compressedFileSizeAligned = bodyReader.ReadInt32();
                 var uncompressedFileSize = bodyReader.ReadInt32();
                 var fileFlags = (FileFlag)bodyReader.ReadByte();
-                var fileOffset = bodyReader.ReadInt32();
+                var fileDataOffset = bodyReader.ReadInt32();
 
                 // skip directories and files with zero size
                 if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
                     continue;
 
-                streamReader.BaseStream.Seek( GrfHeaderSize + fileOffset, SeekOrigin.Begin );
+                streamReader.BaseStream.Seek( GrfHeaderSize + fileDataOffset, SeekOrigin.Begin );
 
                 Files.Add(
                     fileName,
