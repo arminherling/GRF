@@ -23,6 +23,6 @@
 - Loading Version 0x200 GRF Files
 - NuGet package https://www.nuget.org/packages/GRF/
 
-[Unreleased]: https://github.com/arminherling/GRF/releases/tag/v0.2.0...HEAD
-[0.2.0]: https://github.com/arminherling/GRF/releases/tag/v0.2.0
-[0.1.0]: https://github.com/arminherling/GRF/releases/tag/v0.1.0
+[Unreleased]: https://github.com/arminherling/GRF/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/arminherling/GRF/compare/v0.1.0...v0.2.0   
+[0.1.0]: https://github.com/arminherling/GRF/compare/a3830e726675b4e4d8fb0c78fef82b898fbc7cb8...v0.1.0
