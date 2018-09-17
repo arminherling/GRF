@@ -8,8 +8,8 @@ Library for loading Ragnarok Online GRF Files.
 
 ## Supported GRF File Versions
 
-- [ ] Version 0x102
-- [ ] Version 0x103
+- [x] Version 0x102
+- [x] Version 0x103
 - [x] Version 0x200
 
 ## Supported Features
