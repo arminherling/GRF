@@ -76,7 +76,7 @@ namespace GRF
             var bodyData = streamReader.ReadBytes( bodySize );
             var bodyStream = new MemoryStream( bodyData );
             var bodyReader = new BinaryReader( bodyStream );
-
+            
             for( int i = 0, fileEntryHeader = 0; i < fileCount; i++ )
             {
                 bodyReader.BaseStream.Seek( fileEntryHeader, SeekOrigin.Begin );
@@ -85,18 +85,35 @@ namespace GRF
 
                 bodyReader.BaseStream.Seek( fileEntryHeader + 6, SeekOrigin.Begin );
                 var encodedName = bodyReader.ReadBytes( nameLength );
-                var fileName = DataEncryptionStandard.DecodeFileName( encodedName );
+                var fileName = DecodeFileName( encodedName );
 
-                //bodyReader.BaseStream.Seek( fileEntryData, SeekOrigin.Begin );
-                //var compressedFileSizeBase = bodyReader.ReadInt32();
-                //var compressedFileSizeAligned = bodyReader.ReadInt32() - 37579;
-                //var uncompressedFileSize = bodyReader.ReadInt32();
-                //var compressedFileSize = compressedFileSizeBase - uncompressedFileSize - 715;
-                //var fileFlags = (FileFlag)bodyReader.ReadByte();
-                //var fileDataOffset = bodyReader.ReadInt32() + GrfHeaderSize;
+                bodyReader.BaseStream.Seek( fileEntryData, SeekOrigin.Begin );
+                var compressedFileSizeBase = bodyReader.ReadInt32();
+                var compressedFileSizeAligned = bodyReader.ReadInt32() - 37579;
+                var uncompressedFileSize = bodyReader.ReadInt32();
+                var compressedFileSize = compressedFileSizeBase - uncompressedFileSize - 715;
+                var fileFlags = (FileFlag)bodyReader.ReadByte();
+                fileFlags |= IsFullEncrypted( fileName )
+                    ? FileFlag.Mixed
+                    : FileFlag.DES;
+                var fileDataOffset = bodyReader.ReadInt32() + GrfHeaderSize;
+
+                // skip directories and files with zero size
+                if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
+                    continue;
+
+                streamReader.BaseStream.Seek( fileDataOffset, SeekOrigin.Begin );
+
+                Files.Add(
+                    fileName,
+                    new GrfFile(
+                        streamReader.ReadBytes( compressedFileSizeAligned ),
+                        fileName,
+                        compressedFileSize,
+                        uncompressedFileSize,
+                        fileFlags ) );
 
                 fileEntryHeader = fileEntryData + 17;
-                Files.Add( fileName, new GrfFile( new byte[] { }, fileName, 0, 0, 0 ) );
             }
 
             IsLoaded = true;
@@ -146,6 +163,41 @@ namespace GRF
 
             bodyStream.Close();
             IsLoaded = true;
+        }
+
+        private string DecodeFileName( byte[] encodedName )
+        {
+            for( int i = 0; i < encodedName.Length; i++ )
+            {
+                // swap nibbles
+                encodedName[i] = (byte)( ( encodedName[i] & 0x0F ) << 4 | ( encodedName[i] & 0xF0 ) >> 4 );
+            }
+            for( int i = 0; i < encodedName.Length / 8; i++ )
+            {
+                DataEncryptionStandard.DecryptBlock( ref encodedName, i * 8 );
+            }
+
+            string fileName = string.Empty;
+            for( int i = 0; i < encodedName.Length; i++ )
+            {
+                if( (char)encodedName[i] == 0 )
+                    break;
+
+                fileName += (char)encodedName[i];
+            }
+
+            return fileName;
+        }
+
+        private bool IsFullEncrypted( string fileName )
+        {
+            string[] extensions = { ".gnd", ".gat", ".act", ".str" };
+            foreach( var extension in extensions )
+            {
+                if( fileName.EndsWith( extension ) )
+                    return false;
+            }
+            return true;
         }
     }
 }

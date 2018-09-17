@@ -61,55 +61,17 @@ namespace GRF
         static readonly byte[] Bitmask = {
             0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
         };
-
-        internal static byte[] DecodeGrfFile( byte[] data, FileFlag flags, int compressedSize )
-        {
-            if( flags.HasFlag( FileFlag.Mixed ) )
-            {
-                throw new NotImplementedException( "DecodeFull not implemented" );
-            }
-            else if( flags.HasFlag( FileFlag.DES ) )
-            {
-                throw new NotImplementedException( "DecodeHeader not implemented" );
-            }
-
-            return data;
-        }
-
-        internal static string DecodeFileName( byte[] encodedName )
-        {
-            for( int i = 0; i < encodedName.Length; i++ )
-            {
-                // swap nibbles
-                encodedName[i] = (byte)( ( encodedName[i] & 0x0F ) << 4 | ( encodedName[i] & 0xF0 ) >> 4 );
-            }
-            for( int i = 0; i < encodedName.Length / 8; i++ )
-            {
-                DesDecodeBlock( ref encodedName, i * 8 );
-            }
-
-            string fileName = string.Empty;
-            for( int i = 0; i < encodedName.Length; i++ )
-            {
-                if( (char)encodedName[i] == 0 )
-                    break;
-
-                fileName += (char)encodedName[i];
-            }
-
-            return fileName;
-        }
-
-        private static void DesDecodeBlock( ref byte[] encodedName, int i )
+       
+        public static void DecryptBlock( ref byte[] source, int size )
         {
             byte[] block = new byte[8];
-            Array.Copy( encodedName, i, block, 0, 8 );
+            Array.Copy( source, size, block, 0, 8 );
 
             InitialPermutation( ref block );
             RoundFunction( ref block );
             FinalPermutation( ref block );
 
-            Array.Copy( block, 0, encodedName, i, 8 );
+            Array.Copy( block, 0, source, size, 8 );
         }
 
         private static void InitialPermutation( ref byte[] source )
@@ -200,6 +162,5 @@ namespace GRF
 
             Array.Copy( block, 0, source, 0, 8 );
         }
-
     }
 }
