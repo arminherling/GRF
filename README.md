@@ -2,7 +2,8 @@
 
 Library for loading Ragnarok Online GRF Files.
 
-[![license](https://img.shields.io/github/license/arminherling/GRF.svg)](https://github.com/arminherling/GRF/blob/master/LICENSE) [![Build Status](https://travis-ci.org/arminherling/GRF.svg?branch=master)](https://travis-ci.org/arminherling/GRF) 
+[![Build Status](https://travis-ci.org/arminherling/GRF.svg?branch=master)](https://travis-ci.org/arminherling/GRF) [![license](https://img.shields.io/github/license/arminherling/GRF.svg)](https://github.com/arminherling/GRF/blob/master/LICENSE) [![NuGet](https://img.shields.io/nuget/v/GRF.svg)](https://www.nuget.org/packages/GRF/)
+
 
  * [Changelog](CHANGELOG.md)
 
