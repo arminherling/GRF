@@ -4,26 +4,28 @@ namespace GRF
 {
     public static class DataEncryptionStandard
     {
-        static readonly byte[] InitialPermutationTable = {
+        public static int BlockSize = 8;
+
+        private static readonly byte[] InitialPermutationTable = {
             58, 50, 42, 34, 26, 18, 10,  2, 60, 52, 44, 36, 28, 20, 12,  4,
             62, 54, 46, 38, 30, 22, 14,  6, 64, 56, 48, 40, 32, 24, 16,  8,
             57, 49, 41, 33, 25, 17,  9,  1, 59, 51, 43, 35, 27, 19, 11,  3,
             61, 53, 45, 37, 29, 21, 13,  5, 63, 55, 47, 39, 31, 23, 15,  7
         };
 
-        static readonly byte[] FinalPermutationTable = {
+        private static readonly byte[] FinalPermutationTable = {
             40,  8, 48, 16, 56, 24, 64, 32, 39,  7, 47, 15, 55, 23, 63, 31,
             38,  6, 46, 14, 54, 22, 62, 30, 37,  5, 45, 13, 53, 21, 61, 29,
             36,  4, 44, 12, 52, 20, 60, 28, 35,  3, 43, 11, 51, 19, 59, 27,
             34,  2, 42, 10, 50, 18, 58, 26, 33,  1, 41,  9, 49, 17, 57, 25
         };
 
-        static readonly byte[] TranspositionTable = {
+        private static readonly byte[] TranspositionTable = {
             16, 7, 20, 21, 29, 12, 28, 17,  1, 15, 23, 26,  5, 18, 31, 10,
             2,  8, 24, 14, 32, 27,  3,  9, 19, 13, 30,  6, 22, 11,  4, 25
         };
 
-        static readonly byte[] ExpansionTable = {
+        private static readonly byte[] ExpansionTable = {
             32,  1,  2,  3,  4,  5,
              4,  5,  6,  7,  8,  9,
              8,  9, 10, 11, 12, 13,
@@ -34,7 +36,7 @@ namespace GRF
             28, 29, 30, 31, 32,  1,
         };
 
-        static readonly byte[][] SubstitutionBoxesTable = {
+        private static readonly byte[][] SubstitutionBoxesTable = {
             new byte[] {
                 0xef, 0x03, 0x41, 0xfd, 0xd8, 0x74, 0x1e, 0x47,  0x26, 0xef, 0xfb, 0x22, 0xb3, 0xd8, 0x84, 0x1e,
                 0x39, 0xac, 0xa7, 0x60, 0x62, 0xc1, 0xcd, 0xba,  0x5c, 0x96, 0x90, 0x59, 0x05, 0x3b, 0x7a, 0x85,
@@ -58,25 +60,20 @@ namespace GRF
             }
         };
 
-        static readonly byte[] Bitmask = {
+        private static readonly byte[] Bitmask = {
             0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
         };
        
-        public static void DecryptBlock( ref byte[] source, int size )
+        public static void DecryptBlock( Span<byte> source )
         {
-            byte[] block = new byte[8];
-            Array.Copy( source, size, block, 0, 8 );
-
-            InitialPermutation( ref block );
-            RoundFunction( ref block );
-            FinalPermutation( ref block );
-
-            Array.Copy( block, 0, source, size, 8 );
+            InitialPermutation( source );
+            RoundFunction( source );
+            FinalPermutation( source );
         }
 
-        private static void InitialPermutation( ref byte[] source )
+        private static void InitialPermutation( Span<byte> source )
         {
-            byte[] block = new byte[8];
+            Span<byte> block = stackalloc byte[BlockSize];
 
             for( int i = 0; i < InitialPermutationTable.Length; i++ )
             {
@@ -86,17 +83,17 @@ namespace GRF
                     block[( i >> 3 ) & 7] |= Bitmask[i & 7];
             }
 
-            Array.Copy( block, 0, source, 0, 8 );
+            block.CopyTo( source );
         }
 
-        private static void RoundFunction( ref byte[] source )
+        private static void RoundFunction( Span<byte> source )
         {
-            byte[] block = new byte[8];
-            Array.Copy( source, 0, block, 0, 8 );
-
-            Expansion( ref block );
-            SubstitutionBoxes( ref block );
-            Transposition( ref block );
+            Span<byte> block = stackalloc byte[BlockSize];
+            source.CopyTo( block );
+            
+            Expansion( block );
+            SubstitutionBoxes( block );
+            Transposition( block );
 
             source[0] ^= block[4];
             source[1] ^= block[5];
@@ -104,9 +101,9 @@ namespace GRF
             source[3] ^= block[7];
         }
 
-        private static void FinalPermutation( ref byte[] source )
+        private static void FinalPermutation( Span<byte> source )
         {
-            byte[] block = new byte[8];
+            Span<byte> block = stackalloc byte[BlockSize];
 
             for( int i = 0; i < FinalPermutationTable.Length; i++ )
             {
@@ -116,41 +113,36 @@ namespace GRF
                     block[( i >> 3 ) & 7] |= Bitmask[i & 7];
             }
 
-            Array.Copy( block, 0, source, 0, 8 );
+            block.CopyTo( source );
         }
 
-        private static void Expansion( ref byte[] source )
+        private static void Expansion( Span<byte> source )
         {
-            byte[] block = new byte[8];
+            Span<byte> tmpCopy = stackalloc byte[BlockSize];
+            source.CopyTo( tmpCopy );
 
-            block[0] = (byte)( ( ( source[7] << 5 ) | ( source[4] >> 3 ) ) & 0x3f );    // ..0 vutsr
-            block[1] = (byte)( ( ( source[4] << 1 ) | ( source[5] >> 7 ) ) & 0x3f );    // ..srqpo n
-            block[2] = (byte)( ( ( source[4] << 5 ) | ( source[5] >> 3 ) ) & 0x3f );    // ..o nmlkj
-            block[3] = (byte)( ( ( source[5] << 1 ) | ( source[6] >> 7 ) ) & 0x3f );    // ..kjihg f
-            block[4] = (byte)( ( ( source[5] << 5 ) | ( source[6] >> 3 ) ) & 0x3f );    // ..g fedcb
-            block[5] = (byte)( ( ( source[6] << 1 ) | ( source[7] >> 7 ) ) & 0x3f );    // ..cba98 7
-            block[6] = (byte)( ( ( source[6] << 5 ) | ( source[7] >> 3 ) ) & 0x3f );    // ..8 76543
-            block[7] = (byte)( ( ( source[7] << 1 ) | ( source[4] >> 7 ) ) & 0x3f );    // ..43210 v
-
-            Array.Copy( block, 0, source, 0, 8 );
+            source[0] = (byte)( ( ( tmpCopy[7] << 5 ) | ( tmpCopy[4] >> 3 ) ) & 0x3f );    // ..0 vutsr
+            source[1] = (byte)( ( ( tmpCopy[4] << 1 ) | ( tmpCopy[5] >> 7 ) ) & 0x3f );    // ..srqpo n
+            source[2] = (byte)( ( ( tmpCopy[4] << 5 ) | ( tmpCopy[5] >> 3 ) ) & 0x3f );    // ..o nmlkj
+            source[3] = (byte)( ( ( tmpCopy[5] << 1 ) | ( tmpCopy[6] >> 7 ) ) & 0x3f );    // ..kjihg f
+            source[4] = (byte)( ( ( tmpCopy[5] << 5 ) | ( tmpCopy[6] >> 3 ) ) & 0x3f );    // ..g fedcb
+            source[5] = (byte)( ( ( tmpCopy[6] << 1 ) | ( tmpCopy[7] >> 7 ) ) & 0x3f );    // ..cba98 7
+            source[6] = (byte)( ( ( tmpCopy[6] << 5 ) | ( tmpCopy[7] >> 3 ) ) & 0x3f );    // ..8 76543
+            source[7] = (byte)( ( ( tmpCopy[7] << 1 ) | ( tmpCopy[4] >> 7 ) ) & 0x3f );    // ..43210 v
         }
 
-        private static void SubstitutionBoxes( ref byte[] source )
+        private static void SubstitutionBoxes( Span<byte> source )
         {
-            byte[] block = new byte[8];
-
             for( int i = 0; i < SubstitutionBoxesTable.Length; i++ )
             {
-                block[i] = (byte)( ( SubstitutionBoxesTable[i][source[i * 2 + 0]] & 0xf0 )
+                source[i] = (byte)( ( SubstitutionBoxesTable[i][source[i * 2 + 0]] & 0xf0 )
                             | ( SubstitutionBoxesTable[i][source[i * 2 + 1]] & 0x0f ) );
             }
-
-            Array.Copy( block, 0, source, 0, 8 );
         }
 
-        private static void Transposition( ref byte[] source )
+        private static void Transposition( Span<byte> source )
         {
-            byte[] block = new byte[8];
+            Span<byte> block = stackalloc byte[BlockSize];
 
             for( int i = 0; i < TranspositionTable.Length; i++ )
             {
@@ -160,7 +152,7 @@ namespace GRF
                     block[( i >> 3 ) + 4] |= Bitmask[i & 7];
             }
 
-            Array.Copy( block, 0, source, 0, 8 );
+            block.CopyTo( source );
         }
     }
 }

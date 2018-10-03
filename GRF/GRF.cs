@@ -35,8 +35,6 @@ namespace GRF
             streamReader.ReadByte(); // string null terminator
 
             var encryptionKey = streamReader.ReadBytes( 14 );
-
-            File.WriteAllBytes( @"dump.txt", encryptionKey );
             var fileTableOffset = streamReader.ReadInt32();
             var distortedFileCountSeed = streamReader.ReadInt32();
             var distortedFileCount = streamReader.ReadInt32();
@@ -60,7 +58,7 @@ namespace GRF
             {
                 throw new NotImplementedException( $"Version {version} of GRF files is currently not supported." );
             }
-            stream.Close();
+            streamReader.Close();
         }
 
         public void Unload()
@@ -76,7 +74,7 @@ namespace GRF
             var bodyData = streamReader.ReadBytes( bodySize );
             var bodyStream = new MemoryStream( bodyData );
             var bodyReader = new BinaryReader( bodyStream );
-            
+
             for( int i = 0, fileEntryHeader = 0; i < fileCount; i++ )
             {
                 bodyReader.BaseStream.Seek( fileEntryHeader, SeekOrigin.Begin );
@@ -85,7 +83,7 @@ namespace GRF
 
                 bodyReader.BaseStream.Seek( fileEntryHeader + 6, SeekOrigin.Begin );
                 var encodedName = bodyReader.ReadBytes( nameLength );
-                var fileName = DecodeFileName( encodedName );
+                var fileName = DecodeFileName( encodedName.AsSpan() );
 
                 bodyReader.BaseStream.Seek( fileEntryData, SeekOrigin.Begin );
                 var compressedFileSizeBase = bodyReader.ReadInt32();
@@ -115,6 +113,7 @@ namespace GRF
 
                 fileEntryHeader = fileEntryData + 17;
             }
+            bodyReader.Close();
 
             IsLoaded = true;
         }
@@ -161,20 +160,22 @@ namespace GRF
                         fileFlags ) );
             }
 
-            bodyStream.Close();
+            bodyReader.Close();
             IsLoaded = true;
         }
 
-        private string DecodeFileName( byte[] encodedName )
+        private string DecodeFileName( Span<byte> encodedName )
         {
             for( int i = 0; i < encodedName.Length; i++ )
             {
                 // swap nibbles
                 encodedName[i] = (byte)( ( encodedName[i] & 0x0F ) << 4 | ( encodedName[i] & 0xF0 ) >> 4 );
             }
-            for( int i = 0; i < encodedName.Length / 8; i++ )
+            for( int i = 0; i < encodedName.Length / DataEncryptionStandard.BlockSize; i++ )
             {
-                DataEncryptionStandard.DecryptBlock( ref encodedName, i * 8 );
+                DataEncryptionStandard.DecryptBlock( encodedName.Slice( 
+                    i * DataEncryptionStandard.BlockSize, 
+                    DataEncryptionStandard.BlockSize ) );
             }
 
             string fileName = string.Empty;

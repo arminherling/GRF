@@ -30,34 +30,34 @@ namespace GRF
 
         public byte[] GetUncompressedData()
         {
-            byte[] newData = new byte[_data.Length];
-            _data.CopyTo( newData, 0 );
+            Span<byte> newData = stackalloc byte[_data.Length];
+            _data.CopyTo( newData );
 
             if( Flags.HasFlag( FileFlag.Mixed ) )
             {
-                DecodeFull( ref newData, CompressedSize );
+                DecodeFull( newData, CompressedSize );
             }
             else if( Flags.HasFlag( FileFlag.DES ) )
             {
-                DecodeHeader( ref newData, CompressedSize );
+                DecodeHeader( newData );
             }
-            return ZlibStream.UncompressBuffer( newData );
+            return ZlibStream.UncompressBuffer( newData.ToArray() );
         }
 
-        private static void DecodeHeader( ref byte[] data, int uncompressedSize )
+        private static void DecodeHeader( Span<byte> data )
         {
-            int blocks = data.Length / 8;
+            int blocks = data.Length / DataEncryptionStandard.BlockSize;
             // first 20 blocks are DES-encrypted
             for( int i = 0; i < 20 && i < blocks; ++i )
-                DataEncryptionStandard.DecryptBlock( ref data, i * 8 );
+                DataEncryptionStandard.DecryptBlock( data.Slice( i * DataEncryptionStandard.BlockSize, DataEncryptionStandard.BlockSize ) );
         }
 
-        private static void DecodeFull( ref byte[] data, int uncompressedSize )
+        private static void DecodeFull( Span<byte> source, int compressedSize )
         {
-            DecodeHeader( ref data, uncompressedSize );
+            DecodeHeader( source );
 
-            int blocks = data.Length / 8;
-            int digits = uncompressedSize.ToString().Length;
+            int blocks = source.Length / DataEncryptionStandard.BlockSize;
+            int digits = compressedSize.ToString().Length;
 
             int gapBetweenEncryptedBlocks = ( digits < 3 ) ? 1
                    : ( digits < 5 ) ? digits + 1
@@ -71,33 +71,33 @@ namespace GRF
                 if( ( i % gapBetweenEncryptedBlocks ) == 0 )
                 {
                     // DES-encrypted
-                    DataEncryptionStandard.DecryptBlock( ref data, i * 8 );
+                    DataEncryptionStandard.DecryptBlock( source.Slice( i * DataEncryptionStandard.BlockSize, DataEncryptionStandard.BlockSize ) );
                     continue;
                 }
 
                 ++j;
                 if( ( j % gapBetweenShuffledBlocks ) == 0 && j != 0 )
                 {
-                    DeshuffleBlock( ref data, i * 8 );
+                    DeshuffleBlock( source.Slice( i * DataEncryptionStandard.BlockSize, DataEncryptionStandard.BlockSize ) );
                     continue;
                 }
             }
         }
 
-        private static void DeshuffleBlock( ref byte[] src, int start )
+        private static void DeshuffleBlock( Span<byte> source )
         {
-            byte[] tmp = new byte[8];
+            Span<byte> tempData = stackalloc byte[DataEncryptionStandard.BlockSize];
 
-            tmp[0] = src[start + 3];
-            tmp[1] = src[start + 4];
-            tmp[2] = src[start + 6];
-            tmp[3] = src[start + 0];
-            tmp[4] = src[start + 1];
-            tmp[5] = src[start + 2];
-            tmp[6] = src[start + 5];
-            tmp[7] = Substitute( src[start + 7] );
+            tempData[0] = source[3];
+            tempData[1] = source[4];
+            tempData[2] = source[6];
+            tempData[3] = source[0];
+            tempData[4] = source[1];
+            tempData[5] = source[2];
+            tempData[6] = source[5];
+            tempData[7] = Substitute( source[7] );
 
-            Array.Copy( tmp, 0, src, start, 8 );
+            tempData.CopyTo( source );
         }
 
         private static byte Substitute( byte input )
