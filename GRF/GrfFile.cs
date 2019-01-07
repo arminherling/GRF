@@ -12,25 +12,22 @@ namespace GRF
         {
             _data = data;
             FilePath = filePath;
-            FileName = Path.GetFileName( filePath.Replace( "\\", "/" ) );
-            FileType = Path.GetExtension( filePath ).TrimStart( '.' );
             CompressedSize = compressedSize;
-            CompressedSizeAligned = _data.Length;
             UncompressedSize = uncompressedSize;
             Flags = flags;
         }
 
         public string FilePath { get; }
-        public string FileName { get; }
-        public string FileType { get; }
+        public string FileName => Path.GetFileName( FilePath.Replace( "\\", "/" ) );
+        public string FileType => Path.GetExtension( FilePath ).TrimStart( '.' );
         public int CompressedSize { get; }
-        public int CompressedSizeAligned { get; }
+        public int CompressedSizeAligned => _data.Length;
         public int UncompressedSize { get; }
         public FileFlag Flags { get; }
 
         public byte[] GetUncompressedData()
         {
-            Span<byte> newData = stackalloc byte[_data.Length];
+            Span<byte> newData = stackalloc byte[CompressedSizeAligned];
             _data.CopyTo( newData );
 
             if( Flags.HasFlag( FileFlag.Mixed ) )

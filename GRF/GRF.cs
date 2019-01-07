@@ -16,6 +16,7 @@ namespace GRF
         public Dictionary<string, GrfFile> Files { get; set; } = new Dictionary<string, GrfFile>();
         public int FileCount => Files.Count;
         public List<string> FileNames => Files.Keys.ToList();
+        public string FilePath { get; private set; }
 
         public Grf() { }
         public Grf( string grfFilePath ) => Load( grfFilePath );
@@ -23,11 +24,11 @@ namespace GRF
         public void Load( string grfFilePath )
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var absolutePath = Path.Combine( baseDirectory, grfFilePath );
-            if( !File.Exists( absolutePath ) )
+            FilePath = Path.Combine( baseDirectory, grfFilePath );
+            if( !File.Exists( FilePath ) )
                 throw new FileNotFoundException( grfFilePath );
 
-            Stream stream = new MemoryStream( File.ReadAllBytes( absolutePath ) );
+            Stream stream = new MemoryStream( File.ReadAllBytes( FilePath ) );
             var streamReader = new BinaryReader( stream );
 
             var signatureBytes = streamReader.ReadBytes( 15 );
@@ -64,6 +65,7 @@ namespace GRF
         public void Unload()
         {
             Files.Clear();
+            FilePath = string.Empty;
             Signature = string.Empty;
             IsLoaded = false;
         }
@@ -173,8 +175,8 @@ namespace GRF
             }
             for( int i = 0; i < encodedName.Length / DataEncryptionStandard.BlockSize; i++ )
             {
-                DataEncryptionStandard.DecryptBlock( encodedName.Slice( 
-                    i * DataEncryptionStandard.BlockSize, 
+                DataEncryptionStandard.DecryptBlock( encodedName.Slice(
+                    i * DataEncryptionStandard.BlockSize,
                     DataEncryptionStandard.BlockSize ) );
             }
 

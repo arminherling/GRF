@@ -20,11 +20,11 @@ namespace GRF
             var currentSection = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             _sections[""] = currentSection;
 
-            foreach(var line in File.ReadAllLines( path ) )
+            foreach( var line in File.ReadAllLines( path ) )
             {
                 var trimmedLine = line.Trim();
 
-                if( trimmedLine.StartsWith("[") && trimmedLine.EndsWith( "]" ) )
+                if( trimmedLine.StartsWith( "[" ) && trimmedLine.EndsWith( "]" ) )
                 {
                     var sectionName = trimmedLine.Substring( 1, trimmedLine.Length - 2 );
 
@@ -41,7 +41,7 @@ namespace GRF
             }
         }
 
-        internal string GetValue(string section, string key, string defaultValue = "" )
+        internal string Value( string section, string key, string defaultValue = "" )
         {
             if( !_sections.ContainsKey( section ) )
                 return defaultValue;
@@ -52,12 +52,20 @@ namespace GRF
             return _sections[section][key];
         }
 
-        internal string[] GetKeys(string section )
+        internal string[] Keys( string section )
         {
             if( !_sections.ContainsKey( section ) )
                 return new string[0];
 
             return _sections[section].Keys.ToArray();
+        }
+
+        internal string[] Values( string section )
+        {
+            if( !_sections.ContainsKey( section ) )
+                return new string[] { };
+
+            return _sections[section].Values.ToArray();
         }
     }
 }
