@@ -15,19 +15,19 @@ namespace GRF.Tests
         };
 
         [Test]
-        public void FileNames_ReturnsEmptyList_BeforeLoadingAFile()
+        public void EntryNames_ReturnsEmptyList_BeforeLoadingAFile()
         {
             var grf = new Grf();
             var expected = new List<string>();
 
-            var actual = grf.FileNames;
+            var actual = grf.EntryNames;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void FileNames_ReturnsAllFilesFromTestGrf_AfterLoadingAFile( string inputFile )
+        public void EntryNames_ReturnsAllFilesFromTestGrf_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
             var expected = new List<string>() {
@@ -42,17 +42,17 @@ namespace GRF.Tests
                 "data\\t2_¹è°æ1-1.bmp" };
             grf.Load( inputFile );
 
-            var actual = grf.FileNames;
+            var actual = grf.EntryNames;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfFilesWithFilePaths_AfterLoadingAFile( string inputFile )
+        public void Entries_ContainGrfEntriesWithPaths_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
-            var expectedFilePaths = new List<string>() {
+            var expectedPaths = new List<string>() {
                 "data\\0_Tex1.bmp",
                 "data\\11001.txt",
                 "data\\balls.wav",
@@ -64,21 +64,20 @@ namespace GRF.Tests
                 "data\\t2_¹è°æ1-1.bmp" };
             grf.Load( inputFile );
 
-            var files = grf.Files;
+            var entries = grf.Entries;
 
-            foreach( var filePath in expectedFilePaths )
+            foreach( var path in expectedPaths )
             {
-                var file = files[filePath];
-                Assert.AreEqual( filePath, file.FilePath );
+                Assert.AreEqual( path, entries[path].Path );
             }
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfFilesWithFileNames_AfterLoadingAFile( string inputFile )
+        public void Files_ContainGrfEntriesWithNames_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
-            var expectedFilePathAndFileName = new List<(string, string)>() {
+            var expectedPathAndName = new List<(string, string)>() {
                 ("data\\0_Tex1.bmp", "0_Tex1.bmp"),
                 ("data\\11001.txt", "11001.txt"),
                 ("data\\balls.wav", "balls.wav"),
@@ -90,21 +89,20 @@ namespace GRF.Tests
                 ("data\\t2_¹è°æ1-1.bmp", "t2_¹è°æ1-1.bmp") };
             grf.Load( inputFile );
 
-            var files = grf.Files;
+            var entries = grf.Entries;
 
-            foreach( var (filePath, extension) in expectedFilePathAndFileName )
+            foreach( var (path, name) in expectedPathAndName )
             {
-                var file = files[filePath];
-                Assert.AreEqual( extension, file.FileName );
+                Assert.AreEqual( name, entries[path].Name );
             }
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfFilesWithFileTypes_AfterLoadingAFile( string inputFile )
+        public void Files_ContainGrfEntriesWithTypes_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
-            var expectedFilePathAndType = new List<(string, string)>() {
+            var expectedPathAndTypes = new List<(string, string)>() {
                 ("data\\0_Tex1.bmp", "bmp"),
                 ("data\\11001.txt", "txt"),
                 ("data\\balls.wav", "wav"),
@@ -116,12 +114,11 @@ namespace GRF.Tests
                 ("data\\t2_¹è°æ1-1.bmp", "bmp") };
             grf.Load( inputFile );
 
-            var files = grf.Files;
+            var entries = grf.Entries;
 
-            foreach( var (filePath, extension) in expectedFilePathAndType )
+            foreach( var (path, type) in expectedPathAndTypes )
             {
-                var file = files[filePath];
-                Assert.AreEqual( extension, file.FileType );
+                Assert.AreEqual( type, entries[path].Type );
             }
         }
 
@@ -132,80 +129,80 @@ namespace GRF.Tests
             var grf = new Grf();
             grf.Load( inputFile );
 
-            var files = grf.Files;
+            var entries = grf.Entries;
 
-            Assert.IsNotEmpty( files );
-            foreach( var file in files.Values )
+            Assert.IsNotEmpty( entries );
+            foreach( var entry in entries.Values )
             {
-                Assert.AreEqual( file.UncompressedSize, file.GetUncompressedData().Length );
+                Assert.AreEqual( entry.UncompressedSize, entry.GetUncompressedData().Length );
             }
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void UncompressedSize_DoesntChangeOriginalDataOnUncompressing_AfterLoadingAFile( string inputFile )
+        public void GetUncompressedData_DoesntChangeOriginalDataOnUncompressing_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
             grf.Load( inputFile );
 
-            var files = grf.Files;
+            var entries = grf.Entries;
 
-            Assert.IsNotEmpty( files );
-            foreach( var file in files.Values )
+            Assert.IsNotEmpty( entries );
+            foreach( var entry in entries.Values )
             {
-                Assert.AreEqual( file.UncompressedSize, file.GetUncompressedData().Length );
-                Assert.AreEqual( file.UncompressedSize, file.GetUncompressedData().Length );
+                Assert.AreEqual( entry.UncompressedSize, entry.GetUncompressedData().Length );
+                Assert.AreEqual( entry.UncompressedSize, entry.GetUncompressedData().Length );
             }
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void FileNames_ReturnsEmptyList_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
+        public void EntryNames_ReturnsEmptyList_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
         {
             var grf = new Grf();
             var expected = new List<string>();
             grf.Load( inputFile );
             grf.Unload();
 
-            var actual = grf.FileNames;
+            var actual = grf.EntryNames;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
-        public void FileCount_ReturnsZero_BeforeLoadingAFile()
+        public void EntryCount_ReturnsZero_BeforeLoadingAFile()
         {
             var grf = new Grf();
             var expected = 0;
 
-            var actual = grf.FileCount;
+            var actual = grf.EntryCount;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void FileCount_ReturnsNine_AfterLoadingAFile( string inputFile )
+        public void EntryCount_ReturnsNine_AfterLoadingAFile( string inputFile )
         {
             var grf = new Grf();
             var expected = 9;
             grf.Load( inputFile );
 
-            var actual = grf.FileCount;
+            var actual = grf.EntryCount;
 
             Assert.AreEqual( expected, actual );
         }
 
         [Test]
         [TestCaseSource( "InputFiles" )]
-        public void FileCount_ReturnsZero_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
+        public void EntryCount_ReturnsZero_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
         {
             var grf = new Grf();
             var expected = 0;
             grf.Load( inputFile );
             grf.Unload();
 
-            var actual = grf.FileCount;
+            var actual = grf.EntryCount;
 
             Assert.AreEqual( expected, actual );
         }

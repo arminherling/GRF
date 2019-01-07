@@ -35,11 +35,11 @@ namespace GRF
             _loadedGrfs.Clear();
         }
 
-        public bool FindEntry( string entryPath, out GrfFile file )
+        public bool FindEntry( string entryPath, out GrfEntry file )
         {
             foreach( var grf in _loadedGrfs )
             {
-                if( grf.Files.TryGetValue( entryPath, out file ) )
+                if( grf.Entries.TryGetValue( entryPath, out file ) )
                     return true;
             }
             file = null;
@@ -51,7 +51,7 @@ namespace GRF
             var fileNames = new List<string>();
             foreach( var grf in _loadedGrfs )
             {
-                fileNames.AddRange( grf.FileNames );
+                fileNames.AddRange( grf.EntryNames );
             }
             return fileNames.Distinct().ToList();
         }

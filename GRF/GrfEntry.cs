@@ -4,22 +4,22 @@ using System.IO;
 
 namespace GRF
 {
-    public class GrfFile
+    public class GrfEntry
     {
         private byte[] _data;
 
-        public GrfFile( byte[] data, string filePath, int compressedSize, int uncompressedSize, FileFlag flags )
+        public GrfEntry( byte[] data, string path, int compressedSize, int uncompressedSize, FileFlag flags )
         {
             _data = data;
-            FilePath = filePath;
+            Path = path;
             CompressedSize = compressedSize;
             UncompressedSize = uncompressedSize;
             Flags = flags;
         }
 
-        public string FilePath { get; }
-        public string FileName => Path.GetFileName( FilePath.Replace( "\\", "/" ) );
-        public string FileType => Path.GetExtension( FilePath ).TrimStart( '.' );
+        public string Path { get; }
+        public string Name => System.IO.Path.GetFileName( Path.Replace( "\\", "/" ) );
+        public string Type => System.IO.Path.GetExtension( Path ).TrimStart( '.' );
         public int CompressedSize { get; }
         public int CompressedSizeAligned => _data.Length;
         public int UncompressedSize { get; }

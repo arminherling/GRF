@@ -13,9 +13,9 @@ namespace GRF
 
         public bool IsLoaded { get; private set; }
         public string Signature { get; private set; } = string.Empty;
-        public Dictionary<string, GrfFile> Files { get; set; } = new Dictionary<string, GrfFile>();
-        public int FileCount => Files.Count;
-        public List<string> FileNames => Files.Keys.ToList();
+        public Dictionary<string, GrfEntry> Entries { get; set; } = new Dictionary<string, GrfEntry>();
+        public int EntryCount => Entries.Count;
+        public List<string> EntryNames => Entries.Keys.ToList();
         public string FilePath { get; private set; }
 
         public Grf() { }
@@ -60,11 +60,12 @@ namespace GRF
                 throw new NotImplementedException( $"Version {version} of GRF files is currently not supported." );
             }
             streamReader.Close();
+            IsLoaded = true;
         }
 
         public void Unload()
         {
-            Files.Clear();
+            Entries.Clear();
             FilePath = string.Empty;
             Signature = string.Empty;
             IsLoaded = false;
@@ -104,9 +105,9 @@ namespace GRF
 
                 streamReader.BaseStream.Seek( fileDataOffset, SeekOrigin.Begin );
 
-                Files.Add(
+                Entries.Add(
                     fileName,
-                    new GrfFile(
+                    new GrfEntry(
                         streamReader.ReadBytes( compressedFileSizeAligned ),
                         fileName,
                         compressedFileSize,
@@ -116,8 +117,6 @@ namespace GRF
                 fileEntryHeader = fileEntryData + 17;
             }
             bodyReader.Close();
-
-            IsLoaded = true;
         }
 
         private void LoadVersion2xx( BinaryReader streamReader, int fileCount )
@@ -152,9 +151,9 @@ namespace GRF
 
                 streamReader.BaseStream.Seek( GrfHeaderSize + fileDataOffset, SeekOrigin.Begin );
 
-                Files.Add(
+                Entries.Add(
                     fileName,
-                    new GrfFile(
+                    new GrfEntry(
                         streamReader.ReadBytes( compressedFileSizeAligned ),
                         fileName,
                         compressedFileSize,
@@ -163,7 +162,6 @@ namespace GRF
             }
 
             bodyReader.Close();
-            IsLoaded = true;
         }
 
         private string DecodeFileName( Span<byte> encodedName )
