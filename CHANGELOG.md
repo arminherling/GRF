@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.3.1] - 2019-01-08
+### Changed
+- Updated System.Memory dependency to 4.5.2
+
 ## [0.3.0] - 2019-01-07
 ### Changed
 - Improved memory usage and speed while uncompressing files
@@ -38,7 +42,8 @@
 - Loading Version 0x200 GRF Files
 - NuGet package https://www.nuget.org/packages/GRF/
 
-[Unreleased]: https://github.com/arminherling/GRF/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/arminherling/GRF/compare/v0.3.0...v0.3.0   
+[Unreleased]: https://github.com/arminherling/GRF/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/arminherling/GRF/compare/v0.3.0...v0.3.1   
+[0.3.0]: https://github.com/arminherling/GRF/compare/v0.2.0...v0.3.0   
 [0.2.0]: https://github.com/arminherling/GRF/compare/v0.1.0...v0.2.0   
 [0.1.0]: https://github.com/arminherling/GRF/compare/a3830e726675b4e4d8fb0c78fef82b898fbc7cb8...v0.1.0

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>GRF</PackageId>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Authors>Armin Herling</Authors>
     <Company>Armin Herling</Company>
     <PackageTags>Ragnarok Online;GRF</PackageTags>
@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Ionic.Zlib.Core" Version="1.0.0" />
-    <PackageReference Include="System.Memory" Version="4.5.1" />
+    <PackageReference Include="System.Memory" Version="4.5.2" />
   </ItemGroup>
 
 </Project>

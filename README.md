@@ -24,17 +24,17 @@ Library for loading Ragnarok Online GRF Files.
 ### Loading single GRF Files
 
 ```cs
-  // create a new GRF object and pass grf path file the Load method
+  // Create a new GRF object and pass grf path file the Load method
   var grf = new Grf();
   grf.Load( @"RO\test.grf" );
 
-  // alternatively you can pass the path into the constructor
+  // Alternatively you can pass the path into the constructor
   var grf = new Grf( @"RO\test.grf" );
 
-  // get the GRF entry from the file
+  // Get the GRF entry from the file
   var entry = grf.Entries[ "data\\idnum2itemdisplaynametable.txt" ];
 
-  // write the data from the entry to a file
+  // Write the data from the entry to a file
   File.WriteAllBytes( @"directory\file.txt", entry.GetUncompressedData() );
 
 ```
@@ -42,11 +42,11 @@ Library for loading Ragnarok Online GRF Files.
 ### Loading multiple GRF Files
 
 ```cs
-  // create a new GRF collection and pass ini file path to the Load method
+  // Create a new GRF collection and pass ini file path to the Load method
   var collection = new GrfCollection();
   collection.Load( @"RO\data.ini" );
 
-  // alternatively you can pass the path into the constructor
+  // Alternatively you can pass the path into the constructor
   var collection = new GrfCollection( @"RO\data.ini" );
 
   // Find the correct entry from all loaded GRF files.
@@ -54,7 +54,7 @@ Library for loading Ragnarok Online GRF Files.
   // priority hide entries with the same name in grf files with lower priorities
   var entryWasFound = collection.FindEntry( "data\\idnum2itemdisplaynametable.txt", out GrfEntry entry );
 
-  // write the data from the entry to a file
+  // Write the data from the entry to a file
   File.WriteAllBytes( @"directory\file.txt", entry.GetUncompressedData() );
 
 ```
