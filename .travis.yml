@@ -10,7 +10,7 @@ matrix:
     - os: windows
 
 mono: none
-dotnet: 2.2.102
+dotnet: 2.1.502
 
 script:
 - dotnet restore
