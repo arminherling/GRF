@@ -1,66 +1,74 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Ionic.Zlib;
+using Microsoft.Win32.SafeHandles;
 
 namespace GRF
 {
     public class Grf
     {
-        static readonly int GrfHeaderSize = 46;
+        static readonly uint GrfHeaderSize = 46;
 
         public bool IsLoaded { get; private set; }
         public string Signature { get; private set; } = string.Empty;
-        public Dictionary<string, GrfEntry> Entries { get; set; } = new Dictionary<string, GrfEntry>();
+        public List<GrfEntry> Entries { get; set; } = new List<GrfEntry>();
         public int EntryCount => Entries.Count;
-        public List<string> EntryNames => Entries.Keys.ToList();
+        public List<string> EntryNames => Entries.ConvertAll<string>(f => f.Path);
         public string FilePath { get; private set; }
+
+        public GrfFileHeader header { get; private set; }
 
         public Grf() { }
         public Grf( string grfFilePath ) => Load( grfFilePath );
 
         public void Load( string grfFilePath )
         {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            FilePath = Path.Combine( baseDirectory, grfFilePath );
-            if( !File.Exists( FilePath ) )
-                throw new FileNotFoundException( grfFilePath );
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            FileInfo fiGrf = new FileInfo(Path.Combine(baseDirectory, grfFilePath));
+            FilePath = fiGrf.FullName;
+            if(!fiGrf.Exists)
+                throw new FileNotFoundException(grfFilePath);
 
-            Stream stream = new MemoryStream( File.ReadAllBytes( FilePath ) );
-            var streamReader = new BinaryReader( stream );
+            this.header = new GrfFileHeader();
 
-            var signatureBytes = streamReader.ReadBytes( 15 );
-            Signature = Encoding.ASCII.GetString( signatureBytes );
-            streamReader.ReadByte(); // string null terminator
-
-            var encryptionKey = streamReader.ReadBytes( 14 );
-            var fileTableOffset = streamReader.ReadInt32();
-            var distortedFileCountSeed = streamReader.ReadInt32();
-            var distortedFileCount = streamReader.ReadInt32();
-            var version = (GrfFormat)streamReader.ReadInt32();
-
-            streamReader.BaseStream.Seek( fileTableOffset, SeekOrigin.Current );
-
-            if( version == GrfFormat.Version102 || version == GrfFormat.Version103 )
+            using (FileStream fsGrf = fiGrf.OpenRead())
+            using (BinaryReader brGrf = new BinaryReader(fsGrf))
             {
-                LoadVersion1xx(
-                    streamReader,
-                    distortedFileCount - distortedFileCountSeed - 7 );
+                this.header.signature = brGrf.ReadBytes(15);
+                Signature = Encoding.ASCII.GetString(this.header.signature);
+                brGrf.ReadByte(); // string null terminator
+
+                this.header.encryptKey = brGrf.ReadBytes(14);
+                this.header.fileOffset = brGrf.ReadUInt32();
+                this.header.seed = brGrf.ReadUInt32();
+                this.header.fileCount = brGrf.ReadUInt32();
+                this.header.version = (GrfFormat)brGrf.ReadUInt32();
+
+                brGrf.BaseStream.Seek(this.header.fileOffset, SeekOrigin.Current);
+
+                this.header.fileCount -= 7;
+
+                if(this.header.version == GrfFormat.Version102 || this.header.version == GrfFormat.Version103) {
+                    this.header.fileCount -= this.header.seed;
+                    LoadVersion1xx(
+                        brGrf,
+                        this.header.fileCount);
+                } else if(this.header.version == GrfFormat.Version200) {
+                    LoadVersion2xx(
+                        brGrf,
+                        this.header.fileCount);
+                } else {
+                    throw new NotImplementedException( $"Version {this.header.version} of GRF files is currently not supported." );
+                }
+                IsLoaded = true;
+
+                brGrf.Close();
+                brGrf.Dispose();
             }
-            else if( version == GrfFormat.Version200 )
-            {
-                LoadVersion2xx(
-                    streamReader,
-                    distortedFileCount - 7 );
-            }
-            else
-            {
-                throw new NotImplementedException( $"Version {version} of GRF files is currently not supported." );
-            }
-            streamReader.Close();
-            IsLoaded = true;
         }
 
         public void Unload()
@@ -71,94 +79,95 @@ namespace GRF
             IsLoaded = false;
         }
 
-        private void LoadVersion1xx( BinaryReader streamReader, int fileCount )
+        private void LoadVersion1xx(BinaryReader streamReader, uint fileCount)
         {
-            var bodySize = (int)( streamReader.BaseStream.Length - streamReader.BaseStream.Position );
-            var bodyData = streamReader.ReadBytes( bodySize );
-            var bodyStream = new MemoryStream( bodyData );
-            var bodyReader = new BinaryReader( bodyStream );
+            uint bodySize = (uint)(streamReader.BaseStream.Length - streamReader.BaseStream.Position);
+            byte[] bodyData = streamReader.ReadBytes((int)bodySize);
+            MemoryStream bodyStream = new MemoryStream(bodyData);
+            BinaryReader bodyReader = new BinaryReader(bodyStream);
 
             for( int i = 0, fileEntryHeader = 0; i < fileCount; i++ )
             {
-                bodyReader.BaseStream.Seek( fileEntryHeader, SeekOrigin.Begin );
+                bodyReader.BaseStream.Seek(fileEntryHeader, SeekOrigin.Begin);
                 int nameLength = bodyReader.PeekChar() - 6;
                 int fileEntryData = fileEntryHeader + bodyReader.ReadInt32() + 4;
 
-                bodyReader.BaseStream.Seek( fileEntryHeader + 6, SeekOrigin.Begin );
-                var encodedName = bodyReader.ReadBytes( nameLength );
-                var fileName = DecodeFileName( encodedName.AsSpan() );
+                bodyReader.BaseStream.Seek(fileEntryHeader + 6, SeekOrigin.Begin);
+                var encodedName = bodyReader.ReadBytes(nameLength);
+                var fileName = DecodeFileName(encodedName.AsSpan());
 
-                bodyReader.BaseStream.Seek( fileEntryData, SeekOrigin.Begin );
-                var compressedFileSizeBase = bodyReader.ReadInt32();
-                var compressedFileSizeAligned = bodyReader.ReadInt32() - 37579;
-                var uncompressedFileSize = bodyReader.ReadInt32();
-                var compressedFileSize = compressedFileSizeBase - uncompressedFileSize - 715;
-                var fileFlags = (FileFlag)bodyReader.ReadByte();
+                bodyReader.BaseStream.Seek(fileEntryData, SeekOrigin.Begin);
+                uint compressedFileSizeBase = bodyReader.ReadUInt32();
+                uint compressedFileSizeAligned = bodyReader.ReadUInt32() - 37579;
+                uint uncompressedFileSize = bodyReader.ReadUInt32();
+                uint compressedFileSize = compressedFileSizeBase - uncompressedFileSize - 715;
+                FileFlag fileFlags = (FileFlag)bodyReader.ReadByte();
                 fileFlags |= IsFullEncrypted( fileName )
                     ? FileFlag.Mixed
                     : FileFlag.DES;
-                var fileDataOffset = bodyReader.ReadInt32() + GrfHeaderSize;
+                uint fileDataOffset = bodyReader.ReadUInt32() + GrfHeaderSize;
 
                 // skip directories and files with zero size
                 if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
                     continue;
 
-                streamReader.BaseStream.Seek( fileDataOffset, SeekOrigin.Begin );
+                streamReader.BaseStream.Seek(fileDataOffset, SeekOrigin.Begin);
 
                 Entries.Add(
-                    fileName,
                     new GrfEntry(
-                        streamReader.ReadBytes( compressedFileSizeAligned ),
                         fileName,
+                        fileDataOffset,
                         compressedFileSize,
+                        compressedFileSizeAligned,
                         uncompressedFileSize,
-                        fileFlags ) );
+                        fileFlags,
+                        this));
 
                 fileEntryHeader = fileEntryData + 17;
             }
             bodyReader.Close();
         }
 
-        private void LoadVersion2xx( BinaryReader streamReader, int fileCount )
+        private void LoadVersion2xx(BinaryReader streamReader, uint fileCount)
         {
-            var compressedBodySize = streamReader.ReadInt32();
-            var bodySize = streamReader.ReadInt32();
+            uint compressedBodySize = streamReader.ReadUInt32();
+            uint bodySize = streamReader.ReadUInt32();
 
-            var compressedBody = streamReader.ReadBytes( compressedBodySize );
-            var bodyData = ZlibStream.UncompressBuffer( compressedBody );
+            byte[] compressedBody = streamReader.ReadBytes((int)compressedBodySize);
+            byte[] bodyData = ZlibStream.UncompressBuffer(compressedBody);
 
-            var bodyStream = new MemoryStream( bodyData );
-            var bodyReader = new BinaryReader( bodyStream );
+            MemoryStream bodyStream = new MemoryStream(bodyData);
+            BinaryReader bodyReader = new BinaryReader(bodyStream);
 
             for( int i = 0; i < fileCount; i++ )
             {
-                var fileName = string.Empty;
+                string fileName = string.Empty;
                 char currentChar;
                 while( ( currentChar = (char)bodyReader.ReadByte() ) != 0 )
                 {
                     fileName += currentChar;
                 }
 
-                var compressedFileSize = bodyReader.ReadInt32();
-                var compressedFileSizeAligned = bodyReader.ReadInt32();
-                var uncompressedFileSize = bodyReader.ReadInt32();
-                var fileFlags = (FileFlag)bodyReader.ReadByte();
-                var fileDataOffset = bodyReader.ReadInt32();
+                uint compressedFileSize = bodyReader.ReadUInt32();
+                uint compressedFileSizeAligned = bodyReader.ReadUInt32();
+                uint uncompressedFileSize = bodyReader.ReadUInt32();
+                FileFlag fileFlags = (FileFlag)bodyReader.ReadByte();
+                uint fileDataOffset = bodyReader.ReadUInt32();
 
                 // skip directories and files with zero size
                 if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
                     continue;
 
-                streamReader.BaseStream.Seek( GrfHeaderSize + fileDataOffset, SeekOrigin.Begin );
 
                 Entries.Add(
-                    fileName,
                     new GrfEntry(
-                        streamReader.ReadBytes( compressedFileSizeAligned ),
                         fileName,
+                        GrfHeaderSize + fileDataOffset,
                         compressedFileSize,
+                        compressedFileSizeAligned,
                         uncompressedFileSize,
-                        fileFlags ) );
+                        fileFlags,
+                        this));
             }
 
             bodyReader.Close();
@@ -199,6 +208,39 @@ namespace GRF
                     return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Get compressed bytes.
+        /// </summary>
+        /// <param name="offset">Position to fetch</param>
+        /// <param name="len">Size to fetch</param>
+        /// <returns>All bytes inside the range</returns>
+        public byte[] GetCompressedBytes(uint offset, uint len)
+        {
+            byte[] data = new byte[len];
+
+            using (FileStream fsGrf = new FileStream(FilePath, FileMode.Open))
+            using (BinaryReader brGrf = new BinaryReader(fsGrf))
+            {
+                brGrf.BaseStream.Seek(offset, SeekOrigin.Begin);
+                data = brGrf.ReadBytes((int)len);
+                brGrf.Close();
+                brGrf.Dispose();
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// Searches a file inside entries based on hashCode
+        /// </summary>
+        /// <param name="fileName">Full path to search in</param>
+        /// <returns>If found, GrfEntry object is returned.</returns>
+        public GrfEntry SearchEntry(string fileName)
+        {
+            int hashCode = fileName.GetHashCode();
+            return this.Entries.FirstOrDefault(entry => entry.GetHashCode().Equals(hashCode));
         }
     }
 }

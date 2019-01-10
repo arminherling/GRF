@@ -64,11 +64,10 @@ namespace GRF.Tests
                 "data\\t2_¹è°æ1-1.bmp" };
             grf.Load( inputFile );
 
-            var entries = grf.Entries;
-
             foreach( var path in expectedPaths )
             {
-                Assert.AreEqual( path, entries[path].Path );
+                int index = grf.EntryNames.IndexOf(path);
+                Assert.AreEqual( path, grf.Entries[index].Path );
             }
         }
 
@@ -89,11 +88,10 @@ namespace GRF.Tests
                 ("data\\t2_¹è°æ1-1.bmp", "t2_¹è°æ1-1.bmp") };
             grf.Load( inputFile );
 
-            var entries = grf.Entries;
-
             foreach( var (path, name) in expectedPathAndName )
             {
-                Assert.AreEqual( name, entries[path].Name );
+                int index = grf.EntryNames.IndexOf(path);
+                Assert.AreEqual(name, grf.Entries[index].Name);
             }
         }
 
@@ -114,11 +112,10 @@ namespace GRF.Tests
                 ("data\\t2_¹è°æ1-1.bmp", "bmp") };
             grf.Load( inputFile );
 
-            var entries = grf.Entries;
-
             foreach( var (path, type) in expectedPathAndTypes )
             {
-                Assert.AreEqual( type, entries[path].Type );
+                int index = grf.EntryNames.IndexOf(path);
+                Assert.AreEqual(type, grf.Entries[index].Type);
             }
         }
 
@@ -132,10 +129,7 @@ namespace GRF.Tests
             var entries = grf.Entries;
 
             Assert.IsNotEmpty( entries );
-            foreach( var entry in entries.Values )
-            {
-                Assert.AreEqual( entry.UncompressedSize, entry.GetUncompressedData().Length );
-            }
+            entries.ForEach(entry => Assert.AreEqual(entry.header.uncompressedSize, entry.GetUncompressedData().Length));
         }
 
         [Test]
@@ -148,11 +142,7 @@ namespace GRF.Tests
             var entries = grf.Entries;
 
             Assert.IsNotEmpty( entries );
-            foreach( var entry in entries.Values )
-            {
-                Assert.AreEqual( entry.UncompressedSize, entry.GetUncompressedData().Length );
-                Assert.AreEqual( entry.UncompressedSize, entry.GetUncompressedData().Length );
-            }
+            entries.ForEach(entry => Assert.AreEqual(entry.header.uncompressedSize, entry.GetUncompressedData().Length));
         }
 
         [Test]
