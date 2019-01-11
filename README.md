@@ -2,7 +2,7 @@
 
 Library for loading Ragnarok Online GRF Files.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/325bija509s7wnp0?svg=true)](https://ci.appveyor.com/project/arminherling/grf) [![Build Status](https://travis-ci.org/arminherling/GRF.svg?branch=master)](https://travis-ci.org/arminherling/GRF) [![license](https://img.shields.io/github/license/arminherling/GRF.svg)](https://github.com/arminherling/GRF/blob/master/LICENSE) [![NuGet](https://img.shields.io/nuget/v/GRF.svg)](https://www.nuget.org/packages/GRF/)
+[![CodeFactor](https://www.codefactor.io/repository/github/arminherling/grf/badge?style=plastic)](https://www.codefactor.io/repository/github/arminherling/grf) [![Build status](https://ci.appveyor.com/api/projects/status/325bija509s7wnp0?svg=true)](https://ci.appveyor.com/project/arminherling/grf) [![Build Status](https://travis-ci.org/arminherling/GRF.svg?branch=master)](https://travis-ci.org/arminherling/GRF) [![license](https://img.shields.io/github/license/arminherling/GRF.svg)](https://github.com/arminherling/GRF/blob/master/LICENSE) [![NuGet](https://img.shields.io/nuget/v/GRF.svg)](https://www.nuget.org/packages/GRF/)
 
 
  * [Changelog](CHANGELOG.md)
