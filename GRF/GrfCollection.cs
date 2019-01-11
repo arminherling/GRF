@@ -37,13 +37,18 @@ namespace GRF
 
         public bool FindEntry( string entryPath, out GrfEntry file )
         {
-            foreach( var grf in _loadedGrfs )
-            {
-                if( grf.Entries.TryGetValue( entryPath, out file ) )
-                    return true;
-            }
+            GrfEntry _file = null;
+            int hashCode = entryPath.GetHashCode();
+
             file = null;
-            return false;
+            foreach(Grf grf in _loadedGrfs) {
+                _file = grf.Entries.FirstOrDefault(entry => entry.GetHashCode().Equals(hashCode));
+                if (file != null)
+                    break;
+            }
+            file = _file;
+
+            return (file != null);
         }
 
         public List<string> AllFileNames()
