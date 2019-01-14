@@ -7,7 +7,7 @@ namespace GRF
 {
     internal class GrfIni
     {
-        Dictionary<string, Dictionary<string, string>> _sections = new Dictionary<string, Dictionary<string, string>>( StringComparer.InvariantCultureIgnoreCase );
+        private Dictionary<string, Dictionary<string, string>> _sections = new Dictionary<string, Dictionary<string, string>>( StringComparer.InvariantCultureIgnoreCase );
 
         internal GrfIni() { }
         internal GrfIni( string path ) => Load( path );
@@ -18,16 +18,14 @@ namespace GRF
                 throw new FileNotFoundException( path );
 
             var currentSection = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-            _sections[""] = currentSection;
+            _sections[string.Empty] = currentSection;
 
             foreach( var line in File.ReadAllLines( path ) )
             {
                 var trimmedLine = line.Trim();
-
                 if( trimmedLine.StartsWith( "[" ) && trimmedLine.EndsWith( "]" ) )
                 {
                     var sectionName = trimmedLine.Substring( 1, trimmedLine.Length - 2 );
-
                     currentSection = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
                     _sections[sectionName] = currentSection;
                     continue;
@@ -41,29 +39,10 @@ namespace GRF
             }
         }
 
-        internal string Value( string section, string key, string defaultValue = "" )
-        {
-            if( !_sections.ContainsKey( section ) )
-                return defaultValue;
-
-            if( !_sections[section].ContainsKey( key ) )
-                return defaultValue;
-
-            return _sections[section][key];
-        }
-
-        internal string[] Keys( string section )
-        {
-            if( !_sections.ContainsKey( section ) )
-                return new string[0];
-
-            return _sections[section].Keys.ToArray();
-        }
-
         internal string[] Values( string section )
         {
             if( !_sections.ContainsKey( section ) )
-                return new string[] { };
+                throw new KeyNotFoundException();
 
             return _sections[section].Values.ToArray();
         }

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GRF
+﻿namespace GRF
 {
     public class GrfEntryHeader
     {
-        public uint fileOffset { get; internal set; }
-        public uint compressedSize { get; internal set; }
-        public uint compressedSizeAligned { get; internal set; }
-        public uint uncompressedSize { get; internal set; }
-        public FileFlag flags { get; internal set; }
+        public uint FileOffset { get; internal set; }
+        public uint CompressedSize { get; internal set; }
+        public uint CompressedSizeAligned { get; internal set; }
+        public uint UncompressedSize { get; internal set; }
+        public FileFlag Flags { get; internal set; }
     }
 }

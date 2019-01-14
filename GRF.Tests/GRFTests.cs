@@ -129,7 +129,7 @@ namespace GRF.Tests
             var entries = grf.Entries;
 
             Assert.IsNotEmpty( entries );
-            entries.ForEach(entry => Assert.AreEqual(entry.header.uncompressedSize, entry.GetUncompressedData().Length));
+            entries.ForEach(entry => Assert.AreEqual(entry.Size, entry.GetUncompressedData().Length));
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace GRF.Tests
             var entries = grf.Entries;
 
             Assert.IsNotEmpty( entries );
-            entries.ForEach(entry => Assert.AreEqual(entry.header.uncompressedSize, entry.GetUncompressedData().Length));
+            entries.ForEach(entry => Assert.AreEqual(entry.Size, entry.GetUncompressedData().Length));
         }
 
         [Test]

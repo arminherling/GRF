@@ -6,14 +6,14 @@ namespace GRF
 {
     public class GrfCollection
     {
-        private List<Grf> _loadedGrfs = new List<Grf>();
+        private List<Grf> _grfs = new List<Grf>();
 
         public GrfCollection() { }
         public GrfCollection( string iniFilePath ) => Load( iniFilePath );
 
         public void Load( string iniFilePath, string sectionName = "Data" )
         {
-            _loadedGrfs.Clear();
+            _grfs.Clear();
 
             var dataIni = new GrfIni( iniFilePath );
             var directory = Path.GetDirectoryName( iniFilePath );
@@ -22,42 +22,40 @@ namespace GRF
             foreach( var grfFile in grfFiles )
             {
                 var filePath = Path.Combine( directory, grfFile );
-                _loadedGrfs.Add( new Grf( filePath ) );
+                _grfs.Add( new Grf( filePath ) );
             }
         }
 
         public void Unload()
         {
-            foreach( var grf in _loadedGrfs)
+            foreach( var grf in _grfs )
             {
                 grf.Unload();
             }
-            _loadedGrfs.Clear();
+
+            _grfs.Clear();
         }
 
-        public bool FindEntry( string entryPath, out GrfEntry file )
+        public bool FindEntry( string entryName, out GrfEntry entry )
         {
-            GrfEntry _file = null;
-            int hashCode = entryPath.GetHashCode();
-
-            file = null;
-            foreach(Grf grf in _loadedGrfs) {
-                _file = grf.Entries.FirstOrDefault(entry => entry.GetHashCode().Equals(hashCode));
-                if (file != null)
+            entry = null;
+            foreach( var grf in _grfs )
+            {
+                if( grf.FindEntry( entryName, out entry ) )
                     break;
             }
-            file = _file;
 
-            return (file != null);
+            return !( entry is null );
         }
 
         public List<string> AllFileNames()
         {
             var fileNames = new List<string>();
-            foreach( var grf in _loadedGrfs )
+            foreach( var grf in _grfs )
             {
                 fileNames.AddRange( grf.EntryNames );
             }
+
             return fileNames.Distinct().ToList();
         }
     }
