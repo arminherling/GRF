@@ -36,12 +36,12 @@ namespace GRF
             _grfs.Clear();
         }
 
-        public bool FindEntry( string entryName, out GrfEntry entry )
+        public bool Find( string entryName, out GrfEntry entry )
         {
             entry = null;
             foreach( var grf in _grfs )
             {
-                if( grf.FindEntry( entryName, out entry ) )
+                if( grf.Find( entryName, out entry ) )
                     break;
             }
 
