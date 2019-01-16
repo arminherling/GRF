@@ -165,7 +165,7 @@ namespace GRF.Tests
             var grf = new Grf();
             var expected = 0;
 
-            var actual = grf.EntryCount;
+            var actual = grf.Count;
 
             Assert.AreEqual( expected, actual );
         }
@@ -178,7 +178,7 @@ namespace GRF.Tests
             var expected = 9;
             grf.Load( inputFile );
 
-            var actual = grf.EntryCount;
+            var actual = grf.Count;
 
             Assert.AreEqual( expected, actual );
         }
@@ -192,7 +192,7 @@ namespace GRF.Tests
             grf.Load( inputFile );
             grf.Unload();
 
-            var actual = grf.EntryCount;
+            var actual = grf.Count;
 
             Assert.AreEqual( expected, actual );
         }
@@ -236,13 +236,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        public void Load_ThrowsFileNotFound_WhenPassingInvalidPath()
+        public void Load_ThrowsDirectoryNotFound_WhenPassingInvalidPath()
         {
             var grf = new Grf();
 
             void throwingMethod() { grf.Load( "some/path/file.grf" ); }
 
-            Assert.Throws<FileNotFoundException>( throwingMethod );
+            Assert.Throws<DirectoryNotFoundException>( throwingMethod );
         }
 
         [Test]

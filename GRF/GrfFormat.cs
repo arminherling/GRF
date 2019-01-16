@@ -1,6 +1,6 @@
 ﻿namespace GRF
 {
-    public enum GrfFormat : uint
+    public enum GrfFormat : int
     {
         Version102 = 0x102,
         Version103 = 0x103,

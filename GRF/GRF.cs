@@ -2,62 +2,47 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Ionic.Zlib;
 
 namespace GRF
 {
     public class Grf
     {
-        private GrfHeader Header { get; } = new GrfHeader();
+        private GrfHeader Header { get; set; }
+        public string Signature => Header?.Signature ?? string.Empty;
 
-        public string Signature => Header.Signature;
         public List<GrfEntry> Entries { get; private set; } = new List<GrfEntry>();
-        public int EntryCount => Entries.Count;
+        public int Count => Entries.Count;
         public List<string> EntryNames => Entries.ConvertAll( f => f.Path );
-        public string FilePath { get; private set; }
+
         public bool IsLoaded { get; private set; }
+
+        private string _filePath;
 
         public Grf() { }
         public Grf( string grfFilePath ) => Load( grfFilePath );
 
         public void Load( string grfFilePath )
         {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var fileInfo = new FileInfo( Path.Combine( baseDirectory, grfFilePath ) );
-            FilePath = fileInfo.FullName;
-            if( !fileInfo.Exists )
-                throw new FileNotFoundException( grfFilePath );
+            _filePath = grfFilePath;
+            Header = GrfFileReader.ReadHeader( grfFilePath );
 
-            using( var fileStream = fileInfo.OpenRead() )
+            using( var fileStream = File.OpenRead( grfFilePath ) )
             using( var binaryReader = new BinaryReader( fileStream ) )
             {
-                Header.Signature = Encoding.ASCII.GetString( binaryReader.ReadBytes( 16 ), 0, 15 );
-                Header.EncryptKey = Encoding.ASCII.GetString( binaryReader.ReadBytes( 14 ) );
-                Header.FileOffset = binaryReader.ReadUInt32();
-                Header.Seed = binaryReader.ReadUInt32();
-                var distortedFileCount = binaryReader.ReadUInt32();
-                Header.Version = (GrfFormat)binaryReader.ReadUInt32();
-
-                binaryReader.BaseStream.Seek( Header.FileOffset, SeekOrigin.Current );
+                binaryReader.BaseStream.Seek( Header.FileTablePosition, SeekOrigin.Begin );
 
                 if( Header.Version == GrfFormat.Version102 || Header.Version == GrfFormat.Version103 )
                 {
-                    Header.FileCount = distortedFileCount - 7 - Header.Seed;
                     LoadVersion1xx(
                         binaryReader,
-                        Header.FileCount );
+                        (uint)Header.FileCount );
                 }
                 else if( Header.Version == GrfFormat.Version200 )
                 {
-                    Header.FileCount = distortedFileCount - 7;
                     LoadVersion2xx(
                         binaryReader,
-                        Header.FileCount );
-                }
-                else
-                {
-                    throw new NotImplementedException( $"Version {Header.Version} of GRF files is currently not supported." );
+                        (uint)Header.FileCount );
                 }
 
                 IsLoaded = true;
@@ -66,9 +51,9 @@ namespace GRF
 
         public void Unload()
         {
+            Header = null;
             Entries.Clear();
-            FilePath = string.Empty;
-            Header.Signature = string.Empty;
+            _filePath = string.Empty;
             IsLoaded = false;
         }
 
@@ -102,7 +87,7 @@ namespace GRF
                 fileFlags |= IsFullEncrypted( fileName )
                     ? FileFlag.Mixed
                     : FileFlag.DES;
-                uint fileDataOffset = streamReader.ReadUInt32() + Header.Size;
+                uint fileDataOffset = streamReader.ReadUInt32() + (uint)Header.Size;
 
                 // skip directories and files with zero size
                 if( !fileFlags.HasFlag( FileFlag.File ) || uncompressedFileSize == 0 )
@@ -152,7 +137,7 @@ namespace GRF
                     Entries.Add(
                         new GrfEntry(
                             fileName,
-                            Header.Size + fileDataOffset,
+                            (uint)Header.Size + fileDataOffset,
                             compressedFileSize,
                             compressedFileSizeAligned,
                             uncompressedFileSize,
@@ -203,7 +188,7 @@ namespace GRF
 
         internal byte[] GetCompressedBytes( uint offset, uint lenght )
         {
-            using( var stream = new FileStream( FilePath, FileMode.Open ) )
+            using( var stream = new FileStream( _filePath, FileMode.Open ) )
             using( var binaryReader = new BinaryReader( stream ) )
             {
                 binaryReader.BaseStream.Seek( offset, SeekOrigin.Begin );
