@@ -14,6 +14,12 @@ namespace GRF.Tests
             "Data/test200.grf"
         };
 
+        public static LoadingMode[] LoadingModes() => new LoadingMode[]
+        {
+            LoadingMode.Immediate,
+            LoadingMode.Deferred
+        };
+
         [Test]
         public void EntryNames_ReturnsEmptyList_BeforeLoadingAFile()
         {
@@ -26,8 +32,9 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void EntryNames_ReturnsAllFilesFromTestGrf_AfterLoadingAFile( string inputFile )
+        public void EntryNames_ReturnsAllFilesFromTestGrf_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = new List<string>() {
@@ -40,7 +47,7 @@ namespace GRF.Tests
                 "data\\monstertalktable.xml",
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             var actual = grf.EntryNames;
 
@@ -48,8 +55,9 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void Entries_ContainGrfEntriesWithPaths_AfterLoadingAFile( string inputFile )
+        public void Entries_ContainGrfEntriesWithPaths_AfterLoadingAFile( 
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expectedPaths = new List<string>() {
@@ -62,18 +70,19 @@ namespace GRF.Tests
                 "data\\monstertalktable.xml",
                 "data\\resnametable.txt",
                 "data\\t2_¹è°æ1-1.bmp" };
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             foreach( var path in expectedPaths )
             {
-                int index = grf.EntryNames.IndexOf(path);
+                int index = grf.EntryNames.IndexOf( path );
                 Assert.AreEqual( path, grf.Entries[index].Path );
             }
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfEntriesWithNames_AfterLoadingAFile( string inputFile )
+        public void Files_ContainGrfEntriesWithNames_AfterLoadingAFile( 
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expectedPathAndName = new List<(string, string)>() {
@@ -86,18 +95,19 @@ namespace GRF.Tests
                 ("data\\monstertalktable.xml", "monstertalktable.xml"),
                 ("data\\resnametable.txt", "resnametable.txt"),
                 ("data\\t2_¹è°æ1-1.bmp", "t2_¹è°æ1-1.bmp") };
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             foreach( var (path, name) in expectedPathAndName )
             {
-                int index = grf.EntryNames.IndexOf(path);
-                Assert.AreEqual(name, grf.Entries[index].Name);
+                int index = grf.EntryNames.IndexOf( path );
+                Assert.AreEqual( name, grf.Entries[index].Name );
             }
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void Files_ContainGrfEntriesWithTypes_AfterLoadingAFile( string inputFile )
+        public void Files_ContainGrfEntriesWithTypes_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expectedPathAndTypes = new List<(string, string)>() {
@@ -110,48 +120,51 @@ namespace GRF.Tests
                 ("data\\monstertalktable.xml", "xml"),
                 ("data\\resnametable.txt", "txt"),
                 ("data\\t2_¹è°æ1-1.bmp", "bmp") };
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             foreach( var (path, type) in expectedPathAndTypes )
             {
-                int index = grf.EntryNames.IndexOf(path);
-                Assert.AreEqual(type, grf.Entries[index].Type);
+                int index = grf.EntryNames.IndexOf( path );
+                Assert.AreEqual( type, grf.Entries[index].Type );
             }
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void UncompressedSize_ReturnsSameSizeAsExtractedData_AfterLoadingAFile( string inputFile )
+        public void UncompressedSize_ReturnsSameSizeAsExtractedData_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             var entries = grf.Entries;
 
             Assert.IsNotEmpty( entries );
-            entries.ForEach(entry => Assert.AreEqual(entry.Size, entry.GetUncompressedData().Length));
+            entries.ForEach( entry => Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length ) );
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void GetUncompressedData_DoesntChangeOriginalDataOnUncompressing_AfterLoadingAFile( string inputFile )
+        public void GetUncompressedData_DoesntChangeOriginalDataOnUncompressing_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             var entries = grf.Entries;
 
             Assert.IsNotEmpty( entries );
-            entries.ForEach(entry => Assert.AreEqual(entry.Size, entry.GetUncompressedData().Length));
+            entries.ForEach( entry => Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length ) );
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void EntryNames_ReturnsEmptyList_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
+        public void EntryNames_ReturnsEmptyList_AfterUnloadingAPreviouslyLoadedFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = new List<string>();
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
             grf.Unload();
 
             var actual = grf.EntryNames;
@@ -171,12 +184,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void EntryCount_ReturnsNine_AfterLoadingAFile( string inputFile )
+        public void EntryCount_ReturnsNine_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = 9;
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             var actual = grf.Count;
 
@@ -184,12 +198,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void EntryCount_ReturnsZero_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
+        public void EntryCount_ReturnsZero_AfterUnloadingAPreviouslyLoadedFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = 0;
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
             grf.Unload();
 
             var actual = grf.Count;
@@ -209,12 +224,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void IsLoaded_ReturnsTrue_AfterLoadingAFile( string inputFile )
+        public void IsLoaded_ReturnsTrue_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = true;
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             var actual = grf.IsLoaded;
 
@@ -222,12 +238,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void IsLoaded_ReturnsFalse_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
+        public void IsLoaded_ReturnsFalse_AfterUnloadingAPreviouslyLoadedFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = false;
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
             grf.Unload();
 
             var actual = grf.IsLoaded;
@@ -257,12 +274,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void Signature_ReturnsMasterOfMagic_AfterLoadingAFile( string inputFile )
+        public void Signature_ReturnsMasterOfMagic_AfterLoadingAFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = "Master of Magic";
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
 
             var actual = grf.Signature;
 
@@ -270,12 +288,13 @@ namespace GRF.Tests
         }
 
         [Test]
-        [TestCaseSource( "InputFiles" )]
-        public void Signature_ReturnsEmptyString_AfterUnloadingAPreviouslyLoadedFile( string inputFile )
+        public void Signature_ReturnsEmptyString_AfterUnloadingAPreviouslyLoadedFile(
+            [ValueSource( "InputFiles" )] string inputFile,
+            [ValueSource( "LoadingModes" )] LoadingMode mode )
         {
             var grf = new Grf();
             var expected = string.Empty;
-            grf.Load( inputFile );
+            grf.Load( inputFile, mode );
             grf.Unload();
 
             var actual = grf.Signature;
