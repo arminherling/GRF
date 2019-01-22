@@ -9,20 +9,24 @@ namespace GRF
     public class Grf
     {
         private GrfHeader Header { get; set; }
-        public string Signature => Header?.Signature ?? string.Empty;
+        public string Signature => Header.Signature;
 
         private List<GrfEntry> Entries { get; set; } = new List<GrfEntry>();
         public int Count => Entries.Count;
-        public List<string> EntryNames { get; private set; } = new List<string>();
-
-        public bool IsLoaded { get; private set; }
+        public List<string> EntryNames { get; private set; }
 
         private string _filePath;
 
-        public Grf() { }
-        public Grf( string grfFilePath ) => Load( grfFilePath );
+        public static Grf FromFile( string grfFilePath, LoadingMode loadingMode = LoadingMode.Deferred )
+        {
+            var grf = new Grf();
+            grf.Load( grfFilePath, loadingMode );
+            return grf;
+        }
 
-        public void Load( string grfFilePath, LoadingMode loadingMode = LoadingMode.Deferred )
+        private Grf() { }
+
+        private void Load( string grfFilePath, LoadingMode loadingMode )
         {
             _filePath = grfFilePath;
             Header = GrfFileReader.ReadHeader( grfFilePath );
@@ -50,23 +54,12 @@ namespace GRF
                             binaryReader,
                             (uint)Header.FileCount );
                     }
-
-                    IsLoaded = true;
                 }
                 //EntryNames = Entries.ConvertAll( x => x.Path );
             }
 
             if( loadingMode == LoadingMode.Immediate )
                 EntryNames = Entries.ConvertAll( x => x.Path );
-        }
-
-        public void Unload()
-        {
-            Header = null;
-            Entries.Clear();
-            EntryNames.Clear();
-            _filePath = string.Empty;
-            IsLoaded = false;
         }
 
         public bool Find( string entryName, out GrfEntry entry )

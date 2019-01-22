@@ -15,24 +15,19 @@ Library for loading Ragnarok Online GRF Files.
 
 ## Supported Features
 
-- [x] Loading GRF Files
-- [ ] Saving GRF Files
-- [ ] Adding new entries to GRF Files
+- [x] Lazy loading of GRF Files
+- [x] Eager loading of GRF Files
 
 ## Usage Example
 
 ### Loading single GRF Files
 
 ```cs
-  // Create a new GRF object and pass grf path file the Load method
-  var grf = new Grf();
-  grf.Load( @"RO\test.grf" );
-
-  // Alternatively you can pass the path into the constructor
-  var grf = new Grf( @"RO\test.grf" );
+  // Use the static FromFile method to load the GRF file
+  var grf = Grf.FromFile( @"RO\test.grf" );
 
   // Get the GRF entry from the file
-  var entry = grf.Entries[ "data\\idnum2itemdisplaynametable.txt" ];
+  var entryWasFound = grf.Find( "data\\idnum2itemdisplaynametable.txt", out GrfEntry entry );
 
   // Write the data from the entry to a file
   File.WriteAllBytes( @"directory\file.txt", entry.GetUncompressedData() );
@@ -42,17 +37,13 @@ Library for loading Ragnarok Online GRF Files.
 ### Loading multiple GRF Files
 
 ```cs
-  // Create a new GRF collection and pass ini file path to the Load method
-  var collection = new GrfCollection();
-  collection.Load( @"RO\data.ini" );
-
-  // Alternatively you can pass the path into the constructor
-  var collection = new GrfCollection( @"RO\data.ini" );
+  // Use the static FromFile method and pass ini file path into the method to load the collection
+  var collection = GrfCollection.FromFile( @"RO\data.ini" );
 
   // Find the correct entry from all loaded GRF files.
   // This method behaves just like the game, entries from grf files with a higher 
   // priority hide entries with the same name in grf files with lower priorities
-  var entryWasFound = collection.FindEntry( "data\\idnum2itemdisplaynametable.txt", out GrfEntry entry );
+  var entryWasFound = collection.Find( "data\\idnum2itemdisplaynametable.txt", out GrfEntry entry );
 
   // Write the data from the entry to a file
   File.WriteAllBytes( @"directory\file.txt", entry.GetUncompressedData() );

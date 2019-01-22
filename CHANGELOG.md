@@ -5,6 +5,14 @@
 - Appveyor integration thanks to [@carloshenrq]( https://github.com/carloshenrq )
 - Codefactor integration
 - Immediate and deferred loading modes
+- Grf.FromFile
+- GrfCollection.FromFile
+
+### Removed
+- Grf.Load
+- Grf.Unload
+- GrfCollection.Load
+- GrfCollection.Unload
 
 ## [0.3.1] - 2019-01-08
 ### Changed

@@ -8,13 +8,17 @@ namespace GRF
     {
         private List<Grf> _grfs = new List<Grf>();
 
-        public GrfCollection() { }
-        public GrfCollection( string iniFilePath ) => Load( iniFilePath );
-
-        public void Load( string iniFilePath, string sectionName = "Data" )
+        public static GrfCollection FromFile( string iniFilePath, string sectionName = "Data", LoadingMode loadingMode = LoadingMode.Deferred )
         {
-            _grfs.Clear();
+            var grfCollection = new GrfCollection();
+            grfCollection.Load( iniFilePath, sectionName, loadingMode );
+            return grfCollection;
+        }
 
+        private GrfCollection() { }
+
+        private void Load( string iniFilePath, string sectionName, LoadingMode loadingMode )
+        {
             var dataIni = new GrfIni( iniFilePath );
             var directory = Path.GetDirectoryName( iniFilePath );
             var grfFiles = dataIni.Values( sectionName );
@@ -22,18 +26,8 @@ namespace GRF
             foreach( var grfFile in grfFiles )
             {
                 var filePath = Path.Combine( directory, grfFile );
-                _grfs.Add( new Grf( filePath ) );
+                _grfs.Add( Grf.FromFile( filePath, loadingMode ) );
             }
-        }
-
-        public void Unload()
-        {
-            foreach( var grf in _grfs )
-            {
-                grf.Unload();
-            }
-
-            _grfs.Clear();
         }
 
         public bool Find( string entryName, out GrfEntry entry )
