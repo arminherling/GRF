@@ -11,7 +11,7 @@ namespace GRF
         private GrfHeader Header { get; set; }
         public string Signature => Header?.Signature ?? string.Empty;
 
-        public List<GrfEntry> Entries { get; private set; } = new List<GrfEntry>();
+        private List<GrfEntry> Entries { get; set; } = new List<GrfEntry>();
         public int Count => Entries.Count;
         public List<string> EntryNames { get; private set; } = new List<string>();
 

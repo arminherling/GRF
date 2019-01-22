@@ -74,8 +74,9 @@ namespace GRF.Tests
 
             foreach( var path in expectedPaths )
             {
-                int index = grf.EntryNames.IndexOf( path );
-                Assert.AreEqual( path, grf.Entries[index].Path );
+                var entryFound = grf.Find( path, out GrfEntry entry );
+                Assert.IsTrue( entryFound );
+                Assert.AreEqual( path, entry.Path );
             }
         }
 
@@ -99,8 +100,9 @@ namespace GRF.Tests
 
             foreach( var (path, name) in expectedPathAndName )
             {
-                int index = grf.EntryNames.IndexOf( path );
-                Assert.AreEqual( name, grf.Entries[index].Name );
+                var entryFound = grf.Find( path, out GrfEntry entry );
+                Assert.IsTrue( entryFound );
+                Assert.AreEqual( name, entry.Name );
             }
         }
 
@@ -124,8 +126,9 @@ namespace GRF.Tests
 
             foreach( var (path, type) in expectedPathAndTypes )
             {
-                int index = grf.EntryNames.IndexOf( path );
-                Assert.AreEqual( type, grf.Entries[index].Type );
+                var entryFound = grf.Find( path, out GrfEntry entry );
+                Assert.IsTrue( entryFound );
+                Assert.AreEqual( type, entry.Type);
             }
         }
 
@@ -137,10 +140,13 @@ namespace GRF.Tests
             var grf = new Grf();
             grf.Load( inputFile, mode );
 
-            var entries = grf.Entries;
-
-            Assert.IsNotEmpty( entries );
-            entries.ForEach( entry => Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length ) );
+            Assert.IsTrue( grf.Count != 0 );
+            foreach(var path in grf.EntryNames )
+            {
+                var entryFound = grf.Find( path, out GrfEntry entry );
+                Assert.IsTrue( entryFound );
+                Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length );
+            }
         }
 
         [Test]
@@ -151,10 +157,14 @@ namespace GRF.Tests
             var grf = new Grf();
             grf.Load( inputFile, mode );
 
-            var entries = grf.Entries;
-
-            Assert.IsNotEmpty( entries );
-            entries.ForEach( entry => Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length ) );
+            Assert.IsTrue( grf.Count != 0 );
+            foreach( var path in grf.EntryNames )
+            {
+                var entryFound = grf.Find( path, out GrfEntry entry );
+                Assert.IsTrue( entryFound );
+                Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length );
+                Assert.AreEqual( entry.Size, entry.GetUncompressedData().Length );
+            }
         }
 
         [Test]
